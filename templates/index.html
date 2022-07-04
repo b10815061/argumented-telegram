@@ -1,0 +1,352 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Websocket example</title>
+  </head>  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+  <script type="text/javascript">
+    function connect(endpoint){
+      var ws = new WebSocket('ws://' + document.domain + ':' + location.port + endpoint);
+      return ws
+    }
+
+    // channel & latest msg id map
+    var latest_message_id = new Map()
+    var user_id = 0
+
+    window.addEventListener("beforeunload",(event)=>{
+      console.log("unload")
+      event.returnValue = null
+    })
+
+    function getMessage(channel_id,message_id){
+      
+      //$('#from_message_id').filter(()=>{return $(this).val()==""}).val(0) // example of set the value of the specific tag if the value of it is not given.
+      
+      if(message_id==""){
+        message_id = 0
+      }
+      console.log(user_id)
+      $.ajax({
+        url:`http://localhost:5000/getMessage?channel=${channel_id}&message_id=${message_id}&user_id=${user_id}`,
+        dataType: 'json' // this implies that the backend should return a json format. If violates, the response will always end in the ".fail block. 
+      })
+      .done((res)=>{
+        console.log(res)
+        res = JSON.stringify(res)
+        tmp = res // beware of "", it will result in json parsing error in nextline
+        let data = JSON.parse(tmp)
+        // still finding a solution to response with statusCode from Quart instead of writing the following code
+        if(data.code == 200){
+          if ($('#show_more') !== null){
+            $('#show_more').remove()
+          }
+          var msgDOM = document.getElementById("chatid")
+          data.context.map((d)=>{
+            // modify the given timezone
+              var newDOM = document.createElement("li")
+              localhour = String((parseInt(d.timestamp.slice(11,13)) + CST)%24).padStart(2,'0')
+              time_stamp = d.timestamp.slice(0,11) + localhour + d.timestamp.slice(13,19)
+            if(d.tag=="message"){
+              var msgNode = document.createTextNode(d.channel +"[" + d.from + "]" + " : " +  d.data + "<" + time_stamp+ "> , " + "message id = " + d.message_id);
+              newDOM.appendChild(msgNode)
+            }else if(d.tag=="image"){
+              var msgNode = document.createTextNode(d.channel +"[" + d.from + "]" + " : " );
+              var image = document.createElement("img")
+              image.src = `data:image/jpeg;base64,${d.data}`  
+              newDOM.appendChild(msgNode)
+              newDOM.appendChild(image)
+            }else if(d.tag=="mp4"){
+              var msgNode = document.createTextNode(d.channel +"[" + d.from + "]" + " : " );
+              var video = document.createElement("video")
+              video.type = "video/mp4"
+              video.src = `data:video/mp4;base64,${d.data}`
+              video.autoplay = true
+              video.loop = true
+              newDOM.appendChild(msgNode)
+              newDOM.appendChild(video)
+          }else if(d.tag=="gif"){
+              var msgNode = document.createTextNode(d.channel +"[" + d.from + "]" + " : " );
+              var gif = document.createElement("img")
+              gif.src = `data:img/gif;base64,${d.data}`
+              newDOM.appendChild(msgNode)
+              newDOM.appendChild(gif)
+          }else if(d.tag=="audio"){
+              var msgNode = document.createTextNode(d.channel +"[" + d.from + "]" + " : " );
+              var audio = document.createElement("audio")
+              var source = document.createElement("source")
+              source.type = "audio/ogg"
+              source.src = `data:audio/ogg;base64,${d.data}`
+              audio.setAttribute("controls","")
+              audio.preload = "metadata"
+              audio.appendChild(source)
+              newDOM.appendChild(msgNode)
+              newDOM.appendChild(audio)
+          }
+            
+            msgDOM.appendChild(newDOM)
+          })
+
+          show_more = document.createElement("button")
+          show_more.innerHTML = "show more"
+          show_more.id = "show_more"
+          /*show_more.onclick = function() // the ONLY format : = function() { ... }
+          {
+            console.log("click on show more")
+          }
+          */
+          show_more.onclick = function(){getMessage(data.context[0].channel,data.context[data.context.length-1].message_id)}
+          msgDOM.appendChild(show_more)
+
+          latest_message_id.clear()
+          latest_message_id.set(data.context[0].channel,data.context[data.context.length-1].message_id)
+          console.log(latest_message_id)
+          
+        }
+        else{
+          console.log(data.error)
+        }
+      })
+    }
+
+    $(document).ready(function(){
+    var msg = new WebSocket('ws://' + document.domain + ':' + location.port + '/ws');
+    var conn = new WebSocket('ws://' + document.domain + ':' + location.port + '/conn');
+    var disconn = new WebSocket('ws://' + document.domain + ':' + location.port + '/disconnect')
+    var pri = new WebSocket('ws://' + document.domain + ':' + location.port + '/pri')
+    // channel & unread msg num map
+    var unread_count = new Map();
+    
+    // timezone for specific offset in time
+    const date = new Date()
+    const offset = date.getTimezoneOffset()
+    // the offset is in the measure of PST -> multiply -1 to convert to CST
+    CST = (offset*-1/60)
+
+    msg.onmessage = function (event) {
+      var messages_dom = document.getElementsByTagName('ul')[0];
+        var message_dom = document.createElement('li');
+        tmp = event.data.replaceAll("\'","\"")
+        try {
+          //conosle.log("in msg")
+          //console.log(JSON.parse(tmp))
+          data = JSON.parse(tmp)
+          var content_dom = document.createTextNode(data.channel +"[" + data.from + "]" + " : " +  data.data);
+        }catch(e){
+          var content_dom = document.createTextNode(event.data);
+        }
+        message_dom.appendChild(content_dom);
+        messages_dom.appendChild(message_dom);
+    };
+    conn.onmessage = function (event) {
+        var messages_dom = document.getElementsByTagName('ul')[0];
+        var message_dom = document.createElement('li');
+        tmp = event.data
+        let data = JSON.parse(tmp)
+         try{  
+          if(data.tag == "profile"){
+            if(data.b64!="None"){
+              let name = data.name
+              let b64 = data.b64 
+              let pri = data.pri
+              let id = data.id
+              $('#image').append('<br>' + $('<div/>').text(name + '(' +id + ')').html());
+              $('#image').append('<br>' + $('<div/>').text("\t" + pri).html()+'<br>');
+              $('#image').append(`<img src="data:image/png;base64,${b64}"/>`);
+            }else{
+              let name = data.name
+              let pri = data.pri
+              let id = data.id
+              $('#image').append('<br>' + $('<div/>').text(name + '(' +id + ')').html());
+              $('#image').append('<br>' + $('<div/>').text("\t" + pri).html()+'<br>');
+            }
+          }else if(data.tag == "initial"){
+             var unread_dom = document.createTextNode("[" + data.channel + "]" + " : " + data.count );
+             unread_count.set(data.channel,data.count)
+             message_dom.appendChild(unread_dom);
+             messages_dom.appendChild(message_dom);
+          }else if(data.tag == "system"){
+             var sys_dom = document.createTextNode("[System] :" + data.context )
+             message_dom.appendChild(sys_dom);
+             messages_dom.appendChild(message_dom);
+             
+             if (data.context.slice(0,5) == "Login"){
+                user_id = parseInt(data.context.slice(9))
+                console.log(user_id)
+                $('#conn').attr('disabled',true);
+                $('#phone').attr('disabled',true);
+             }else if(data.context == "please enter the code received in your telegram app"){
+                $("#conn").val("send code")
+             }
+          }else if(data.tag=="image"){
+             let b64 = data.data
+             var content_dom = document.createTextNode(`${data.channel}[${data.from}](${unread_count.get(data.channel)}):`)
+             var image = document.createElement("img")
+             image.src = `data:image/jpeg;base64,${b64}`
+             unread_count.set(data.channel,unread_count.get(data.channel)+1)
+             $('#channel').val(data.channel)
+             message_dom.appendChild(content_dom);
+             message_dom.appendChild(image)
+             messages_dom.appendChild(message_dom);
+          }else if(data.tag=="mp4"){
+             var content_dom = document.createTextNode(`${data.channel}[${data.from}](${unread_count.get(data.channel)}):`)
+             var video = document.createElement("video")
+             video.type = "video/mp4"
+             video.src = `data:video/mp4;base64,${data.data}`
+             video.autoplay = true
+             video.loop = true
+             console.log(video)
+             unread_count.set(data.channel,unread_count.get(data.channel)+1)
+             $('#channel').val(data.channel)
+             message_dom.appendChild(content_dom);
+             message_dom.appendChild(video)
+             messages_dom.appendChild(message_dom);
+          }else if(data.tag=="gif"){
+             var content_dom = document.createTextNode(`${data.channel}[${data.from}](${unread_count.get(data.channel)}):`)
+             var gif = document.createElement("img")
+             gif.src = `data:img/gif;base64,${data.data}`
+             console.log(gif)
+             unread_count.set(data.channel,unread_count.get(data.channel)+1)
+             $('#channel').val(data.channel)
+             message_dom.appendChild(content_dom);
+             message_dom.appendChild(gif)
+             messages_dom.appendChild(message_dom);
+          }else if(data.tag=="audio"){
+             var content_dom = document.createTextNode(`${data.channel}[${data.from}](${unread_count.get(data.channel)}):`)
+             var audio = document.createElement("audio")
+             var source = document.createElement("source")
+             source.type = "audio/ogg"
+             source.src = `data:audio/ogg;base64,${data.data}`
+             audio.setAttribute("controls","")
+             audio.preload = "metadata"
+             unread_count.set(data.channel,unread_count.get(data.channel)+1)
+             $('#channel').val(data.channel)
+             audio.appendChild(source)
+             console.log(audio)
+             message_dom.appendChild(content_dom);
+             message_dom.appendChild(audio)
+             messages_dom.appendChild(message_dom);
+          }
+          else{
+            // modify the given timezone
+            localhour = String((parseInt(data.time_stamp.slice(11,13)) + CST)%24).padStart(2,'0')
+            time_stamp = data.time_stamp.slice(0,11) + localhour + data.time_stamp.slice(13,19)
+            // print out whole msg with time
+            var content_dom = document.createTextNode(data.channel +"[" + data.from + "]"  + "(" + unread_count.get(data.channel) +  ")"+ " : " +  data.data + "<" + time_stamp+ ">");
+            unread_count.set(data.channel,unread_count.get(data.channel)+1)
+            $('#channel').val(data.channel)
+            message_dom.appendChild(content_dom);
+            messages_dom.appendChild(message_dom);
+          }
+        }catch(e){
+          console.log(e)
+        }
+          
+        
+    };
+    pri.onmessage = function (event) {
+      var messages_dom = document.getElementsByTagName('ul')[0];
+        var message_dom = document.createElement('li');
+        var content_dom = document.createTextNode(event.data);
+        message_dom.appendChild(content_dom);
+        messages_dom.appendChild(message_dom);
+        $('#conn').attr('disabled',false)
+        $('#phone').attr('disabled',false)
+    };
+    $('#conn').click(()=>{
+        if(conn.readyState==conn.CLOSED){
+          console.log("reconnecting conn")
+          conn = connect('/conn')
+        }
+        conn.send($('#phone').val())
+        return false
+    })
+
+    $('#send').click(()=>{
+        if(msg.readyState==msg.CLOSED){
+          console.log("reconnecting msg")
+          msg = connect('/ws')
+        }
+        console.log(user_id)
+        let obj = {
+          channel : $('#channel').val(),
+          message : $('#message').val(),
+          user_id : user_id
+        }
+        console.log(obj)
+        msg.send(JSON.stringify(obj))
+        $('#message').val("")
+        return false
+        })
+    $('#set_pri').click(()=>{
+        if(pri.readyState==pri.CLOSED){
+          console.log("reconnecting pri")
+          msg = connect('/pri')
+        }
+        let obj = {
+          channel : $('#pri_channel').val(),
+          pri : $('#pri').val(),
+          user_id : user_id
+        }
+        pri.send(JSON.stringify(obj))
+        return false
+        })
+    $('#disconnect').click(()=>{
+      if(disconn.readyState==disconn.CLOSED){
+        console.log("reconnecting disconnect")
+        disconn = connect('/disconnect')
+      }
+      let obj = {
+        user_id : user_id
+      }
+      disconn.send(JSON.stringify(obj))
+      return false
+    })
+
+
+    $('#get_msg').click(()=>{
+      channel_id = $('#selected_channel').val()
+      getMessage(channel_id,0)
+      return false
+    })
+
+  }) 
+
+    
+  </script>
+  <body>
+    <form>
+        <input type="text" id="phone">
+        <input type="submit" id="conn" value="connect">
+    </form>
+    <form>
+        <input type="text" id="channel">
+        <input type="text" id="message">
+        <input type="submit" id="send" value="send">
+    </form>
+    <form>
+      <input type="text" id="pri_channel">
+      <input type="text" id="pri">
+      <input type="submit" id="set_pri" value="set pri">
+    </form>
+    <form>
+      <input type="text" id="selected_channel">
+      <input type="submit" id="get_msg" value="enter chat">
+    </form>
+    <form>
+      <input type="submit" id="disconnect" value="disconnect_from_telegram">
+    </form>
+    <div>
+      <input type ="file" > 
+    </div>
+    <ul></ul>
+    <div id = "chat">
+      <hr style = "height:2px;color:black">
+      <h2>Chats</h2>
+      <ul id="chatid"></ul>
+      <hr style="height:2px;color:black">
+    </div>
+    <div id="image"></div>
+    
+  </body>
+</html>
