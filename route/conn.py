@@ -5,12 +5,12 @@ import telethon
 from telethon.sync import TelegramClient
 from user.channel.message import incoming_msg
 import response
+import route.util as utils
 
 blueprint = Blueprint("connection", __name__)
 
 api_id = 12655046
 api_hash = 'd84ab8008abfb3ec244630d2a6778fc6'
-client_list = dict()
 
 # determine the given phone is valid and return True if client login successfully
 async def login(client, phone) -> bool:
@@ -48,7 +48,7 @@ async def find_user(client_list, userID) -> telethon.client:
 @blueprint.route("/disconnect")
 async def disconnect():
     userID = request.args.get("user_id")
-    user = await find_user(client_list, userID)
+    user = await find_user(utils.client_list, userID)
     if user != NULL:
         await user.disconnect()
         return response.make_response("system", "log out successfully")
@@ -64,7 +64,7 @@ async def conn():  # listen on incoming connection
         await client.connect()
         if await login(client, phone):
             user = await client.get_me()
-            client_list[user.id] = client  # append into client list
+            utils.client_list[user.id] = client  # append into client list
 
             await websocket.send(response.make_response("system", f"Login as {user.id}"))
             # create folder for further usage
@@ -75,7 +75,7 @@ async def conn():  # listen on incoming connection
             # load profile & unread message
 
             # listen on message
-            incoming_msg.listen_on(client_list, user)
+            incoming_msg.listen_on(utils.client_list, user)
 
             await client.run_until_disconnected()
 
