@@ -112,8 +112,6 @@
     $(document).ready(function(){
     var msg = new WebSocket('ws://' + document.domain + ':' + location.port + '/ws');
     var conn = new WebSocket('ws://' + document.domain + ':' + location.port + '/conn');
-    var disconn = new WebSocket('ws://' + document.domain + ':' + location.port + '/disconnect')
-    var pri = new WebSocket('ws://' + document.domain + ':' + location.port + '/pri')
     // channel & unread msg num map
     var unread_count = new Map();
     
@@ -292,14 +290,14 @@
         return false
         })
     $('#disconnect').click(()=>{
-      if(disconn.readyState==disconn.CLOSED){
-        console.log("reconnecting disconnect")
-        disconn = connect('/disconnect')
-      }
       let obj = {
         user_id : user_id
       }
-      disconn.send(JSON.stringify(obj))
+      $.ajax({
+        url:`http://localhost:5000/disconnect?user_id=${user_id}`,
+        dataType: 'json' // this implies that the backend should return a json format. If violates, the response will always end in the ".fail block. 
+      }).done((res)=>{console.log(res)}
+      )
       return false
     })
 

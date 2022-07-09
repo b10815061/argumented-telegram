@@ -1,6 +1,7 @@
 from quart import Blueprint, render_template, request, websocket
 import os
 import telethon
+import shutil
 from telethon.sync import TelegramClient
 from user.channel.message import incoming_msg
 import response
@@ -10,7 +11,6 @@ blueprint = Blueprint("connection", __name__)
 
 api_id = 12655046
 api_hash = 'd84ab8008abfb3ec244630d2a6778fc6'
-client_list = dict()
 
 
 # determine the given phone is valid and return True if client login successfully
@@ -39,18 +39,32 @@ async def make_folder(client_id) -> str:
         return response.make_response("system", "Error making folder", 500)
 
 
+async def delete_folder(client_id) -> str:
+    path = f"./user/userid{client_id}"
+    print(path)
+    if not os.path.exists(path):
+        return response.make_response("system", "Error deleting folder", 500)
+    else:
+        shutil.rmtree(path, ignore_errors=True)
+        return ""
+
+
 async def find_user(client_list, userID) -> telethon.client:
+    userID = int(userID)
     if userID in client_list:
         return client_list[userID]
     else:
-        return NULL
+        return None
 
 
 @blueprint.route("/disconnect")
 async def disconnect():
-    userID = request.args.get("user_id")
+    userID: str = (request.args.get("user_id"))
     user = await find_user(utils.client_list, userID)
-    if user != NULL:
+    if user != None:
+        res = await delete_folder(userID)
+        if res != "":
+            return res
         await user.disconnect()
         return response.make_response("system", "log out successfully")
     else:
@@ -66,15 +80,14 @@ async def conn():  # listen on incoming connection
         if await login(client, phone):
             user = await client.get_me()
             # append into client list !!! todo -> might want to use token instead
-            # ?
-            utils.client_list[user.id] = client
-            # client_list[user.id] = client
 
             await websocket.send(response.make_response("system", f"Login as {user.id}"))
             # create folder for further usage
             res = await make_folder(user.id)
             if res != "":
                 await websocket.send(res)
+
+            utils.client_list[user.id] = client
 
             # load profile & unread message
 

@@ -15,10 +15,10 @@ def listen_on(client_list, me):  # hook on incoming messages
         tag, context = await util.context_handler(me.id, client_list[me.id], event.message)
         obj = {
             "tag": tag,
-            "channel": channel,
+            "channel": channel.id,
             "from": sender,
             "data": context,
-            "time_stamp": time_stamp
+            "time_stamp": str(time_stamp)
         }
         obj = str(obj)
         obj = obj.replace("\\\'", "\'")
@@ -26,5 +26,7 @@ def listen_on(client_list, me):  # hook on incoming messages
         obj = obj.replace(": '", ': "').replace("':", '":')
         obj = obj.replace("{'", '{"').replace("'}", '"}')
         obj = obj.replace("\\\\", "\\")
+
+        print(obj)
 
         await websocket.send(obj)
