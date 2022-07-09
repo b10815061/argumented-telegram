@@ -1,5 +1,4 @@
 from asyncio import events
-from asyncio.windows_events import NULL
 from tkinter import N
 from quart import Quart, render_template, request, websocket
 from telethon.sync import TelegramClient
