@@ -11,7 +11,7 @@ import telethon
 
 from route.base import blueprint as base_blueprint
 from route.conn import blueprint as conn_blueprint
-# from route.setting import blueprint as setting_blueprint
+from route.setting import blueprint as setting_blueprint
 import route.util as utils
 
 utils.init()
@@ -24,7 +24,7 @@ app = Quart(__name__)
 
 app.register_blueprint(base_blueprint)
 app.register_blueprint(conn_blueprint)
-# app.register_blueprint(setting_blueprint)
+app.register_blueprint(setting_blueprint)
 
 # # determine the given phone is valid and return True if client login successfully
 # async def login(client, phone) -> bool:
