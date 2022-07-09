@@ -11,6 +11,8 @@ blueprint = Blueprint("connection", __name__)
 
 api_id = 12655046
 api_hash = 'd84ab8008abfb3ec244630d2a6778fc6'
+client_list = dict()
+
 
 # determine the given phone is valid and return True if client login successfully
 async def login(client, phone) -> bool:
@@ -30,7 +32,7 @@ async def login(client, phone) -> bool:
 
 
 async def make_folder(client_id) -> str:
-    path = f'./user/{client_id}'
+    path = f'./user/userid{client_id}'
     if not os.path.exists(path):
         os.makedirs(path)
         return ""
@@ -64,7 +66,10 @@ async def conn():  # listen on incoming connection
         await client.connect()
         if await login(client, phone):
             user = await client.get_me()
-            utils.client_list[user.id] = client  # append into client list
+            # append into client list !!! todo -> might want to use token instead
+            # ?
+            utils.client_list[user.id] = client
+            # client_list[user.id] = client
 
             await websocket.send(response.make_response("system", f"Login as {user.id}"))
             # create folder for further usage
