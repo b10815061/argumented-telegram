@@ -1,5 +1,4 @@
 from quart import Blueprint, render_template, request, websocket
-from asyncio.windows_events import NULL
 import os
 import telethon
 from telethon.sync import TelegramClient
