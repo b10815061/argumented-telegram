@@ -16,7 +16,12 @@
 
     window.addEventListener("beforeunload",(event)=>{
       console.log("unload")
-      event.returnValue = null
+      console.log(user_id)
+      $.ajax({
+        url:`http://localhost:5000/disconnect?user_id=${user_id}`,
+        dataType: 'json' // this implies that the backend should return a json format. If violates, the response will always end in the ".fail block. 
+      }).done((res)=>{console.log(res)}
+      )
     })
 
     function getMessage(channel_id,message_id){
@@ -150,7 +155,7 @@
               let id = data.id
               $('#image').append('<br>' + $('<div/>').text(name + '(' +id + ')').html());
               $('#image').append('<br>' + $('<div/>').text("\t" + pri).html()+'<br>');
-              $('#image').append(`<img src="data:image/png;base64,${b64}"/>`);
+              $('#image').append(`<img src="data:image/png;base64,${b64}" alt="user has no profile"/>`);
             }else{
               let name = data.name
               let pri = data.pri
@@ -251,13 +256,32 @@
         $('#conn').attr('disabled',false)
         $('#phone').attr('disabled',false)
     };
-    $('#conn').click(()=>{
-        if(conn.readyState==conn.CLOSED){
-          console.log("reconnecting conn")
-          conn = connect('/conn')
+    $('#login').click(()=>{
+        var package = {
+          "phone" : $("#phone").val()
         }
-        conn.send($('#phone').val())
+        console.log(package)
+        $.ajax({
+        url:`http://localhost:5000/login`,
+        data : JSON.stringify(package),
+        method:"POST",
+        contentType :"application/json",
+        dataType: 'json' // this implies that the backend should return a json format. If violates, the response will always end in the ".fail block. 
+        }).done((data)=>{
+          var messages_dom = document.getElementsByTagName('ul')[0];
+          var message_dom = document.createElement('li');
+          console.log(data)
+          var sys_dom = document.createTextNode("[System] :" + data.context )
+          message_dom.appendChild(sys_dom);
+          messages_dom.appendChild(message_dom);
+          user_id = parseInt(data.context.slice(9))
+          console.log(user_id)
+        })
         return false
+    })
+    $("#persist").click(()=>{
+      conn.send($('#userid').val())
+      return false
     })
 
     $('#send').click(()=>{
@@ -315,7 +339,11 @@
   <body>
     <form>
         <input type="text" id="phone">
-        <input type="submit" id="conn" value="connect">
+        <input type="submit" id="login" value="login">
+    </form>
+    <form>
+        <input type="text" id="userid"> 
+        <input type="submit" id="persist" value="persist">
     </form>
     <form>
         <input type="text" id="channel">

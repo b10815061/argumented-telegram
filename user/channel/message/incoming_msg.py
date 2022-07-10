@@ -26,7 +26,5 @@ def listen_on(client_list, me):  # hook on incoming messages
         obj = obj.replace(": '", ': "').replace("':", '":')
         obj = obj.replace("{'", '{"').replace("'}", '"}')
         obj = obj.replace("\\\\", "\\")
-
         print(obj)
-
         await websocket.send(obj)

@@ -1,3 +1,4 @@
 *.session
-userid*/
-*.jpg
+**/userid*/
+**/*.jpg
+**/__pycache__/
