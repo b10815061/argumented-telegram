@@ -1,3 +1,6 @@
+import route.util as utils
+from route.setting import blueprint as setting_blueprint
+from route.send import blueprint as send_blueprint
 from asyncio import events
 from tkinter import N
 from quart import Quart, render_template, request, websocket
@@ -11,9 +14,6 @@ import telethon
 
 from route.base import blueprint as base_blueprint
 from route.conn import blueprint as conn_blueprint
-from route.send import blueprint as send_blueprint
-# from route.setting import blueprint as setting_blueprint
-import route.util as utils
 
 utils.init()
 
@@ -26,7 +26,7 @@ app = Quart(__name__)
 app.register_blueprint(base_blueprint)
 app.register_blueprint(conn_blueprint)
 app.register_blueprint(send_blueprint)
-# app.register_blueprint(setting_blueprint)
+app.register_blueprint(setting_blueprint)
 
 # # determine the given phone is valid and return True if client login successfully
 # async def login(client, phone) -> bool:
