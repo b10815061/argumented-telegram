@@ -1,6 +1,3 @@
-import route.util as utils
-from route.setting import blueprint as setting_blueprint
-from route.send import blueprint as send_blueprint
 from asyncio import events
 from tkinter import N
 from quart import Quart, render_template, request, websocket
@@ -11,9 +8,15 @@ import os
 import asyncio
 import response
 import telethon
+import socketio
+import uvicorn
 
+import route.util as utils
 from route.base import blueprint as base_blueprint
 from route.conn import blueprint as conn_blueprint
+from route.setting import blueprint as setting_blueprint
+from route.send import blueprint as send_blueprint
+# from func_test.blue import blueprint as testing_blueprint
 
 utils.init()
 
@@ -27,6 +30,9 @@ app.register_blueprint(base_blueprint)
 app.register_blueprint(conn_blueprint)
 app.register_blueprint(send_blueprint)
 app.register_blueprint(setting_blueprint)
+# app.register_blueprint(testing_blueprint)
+
+sio_app = socketio.ASGIApp(utils.sio, app)
 
 # # determine the given phone is valid and return True if client login successfully
 # async def login(client, phone) -> bool:
@@ -100,4 +106,6 @@ app.register_blueprint(setting_blueprint)
 
 
 if __name__ == "__main__":
-    asyncio.run(app.run_task())
+    #asyncio.run(app.run_task())
+    # asyncio.run(sio_app)
+    uvicorn.run(sio_app, port=5000)

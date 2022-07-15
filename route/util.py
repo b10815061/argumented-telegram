@@ -8,13 +8,15 @@ import shutil
 import telethon
 from typing import Any, Tuple
 from telethon.sync import events
+import socketio
 
 
 def init():
-    global client_list, api_hash, api_id
+    global client_list, api_hash, api_id, sio
     api_id = 12655046
     api_hash = 'd84ab8008abfb3ec244630d2a6778fc6'
     client_list = dict()
+    sio = socketio.AsyncServer(async_mode='asgi')
 
 
 # determine the given phone is valid and return True if client login successfully
