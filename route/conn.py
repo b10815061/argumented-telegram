@@ -1,8 +1,7 @@
-from pydoc import cli
-from quart import Blueprint, render_template, request, websocket
+from quart import Blueprint, request, websocket
 from quart_cors import route_cors
 from telethon.sync import TelegramClient
-from user.channel.message import incoming_msg, util
+from user.channel.message import incoming_msg
 import response
 import route.util as utils
 import telethon

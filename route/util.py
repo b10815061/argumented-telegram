@@ -1,4 +1,3 @@
-from user.channel.message import util
 import base64
 from PIL import Image
 from quart import websocket
@@ -6,8 +5,6 @@ import response
 import os
 import shutil
 import telethon
-from typing import Any, Tuple
-from telethon.sync import events
 import socketio
 
 
