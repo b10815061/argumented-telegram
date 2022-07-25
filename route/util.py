@@ -7,7 +7,6 @@ import shutil
 import telethon
 import socketio
 
-
 def init():
     global client_list, api_hash, api_id, sio
     api_id = 12655046
@@ -73,8 +72,8 @@ async def send_unread_count(dialogs):
             "channel": e[1],
             "count": e[0]
         }
-        unread = str(unread).replace("\'", "\"")
-        await websocket.send(unread)
+        # unread = str(unread).replace("\'", "\"")
+        await utils.sio.send(unread) # websocket.send(unread)
 
 
 # iterate through dialog and send profile one by one
@@ -112,4 +111,4 @@ async def send_profile(dialogs, client, client_id):
                 "name": d.name,
             }
 
-            await websocket.send(str(obj).replace("\'", "\""))
+            await utils.sio.send(obj) # websocket.send(str(obj).replace("\'", "\""))
