@@ -34,6 +34,7 @@ async def disconnect():
 async def a(phone):  # listen on incoming connection
     """
     DEPRECATED ENDPOINT, ONLY FOR TESTING
+    USE /login AND /conn INSTEAD (RESTFUL FOR SIGN IN, AND SOCKET FOR PERSISTING)
     """
     client = TelegramClient(phone, utils.api_id, utils.api_hash)
     await client.connect()
