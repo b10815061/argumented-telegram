@@ -3,7 +3,8 @@ from urllib import response
 import telethon
 from . import util
 from telethon.sync import events
-from quart import websocket
+# from quart import websocket
+import route.util as utils
 
 
 def listen_on(client_list, me):
@@ -32,11 +33,11 @@ def listen_on(client_list, me):
             "message_id": message_id,
             "time_stamp": str(time_stamp)
         }
-        obj = str(obj)
-        obj = obj.replace("\\\'", "\'")
-        obj = obj.replace(", '", ', "').replace("',", '",')
-        obj = obj.replace(": '", ': "').replace("':", '":')
-        obj = obj.replace("{'", '{"').replace("'}", '"}')
-        obj = obj.replace("\\\\", "\\")
-        print(obj)
-        await websocket.send(obj)
+        # obj = str(obj)
+        # obj = obj.replace("\\\'", "\'")
+        # obj = obj.replace(", '", ', "').replace("',", '",')
+        # obj = obj.replace(": '", ': "').replace("':", '":')
+        # obj = obj.replace("{'", '{"').replace("'}", '"}')
+        # obj = obj.replace("\\\\", "\\")
+        # print(obj)
+        await utils.sio.send(obj)

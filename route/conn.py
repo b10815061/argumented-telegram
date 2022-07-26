@@ -1,4 +1,4 @@
-from quart import Blueprint, request, websocket
+from quart import Blueprint, request  # , websocket
 from quart_cors import route_cors
 from telethon.sync import TelegramClient
 from user.channel.message import incoming_msg
@@ -12,6 +12,11 @@ blueprint = Blueprint("connection", __name__)
 
 @blueprint.route("/disconnect")
 async def disconnect():
+    """
+    remove the connection of python - telegram.
+    params(json) : [userid : the telegram userID]
+    returns -> 200 : success / TODO : 404
+    """
     userID: str = (request.args.get("user_id"))
     user = utils.find_user(utils.client_list, userID)
     if user != None:
@@ -19,9 +24,45 @@ async def disconnect():
         if res != "":
             return res
         await user.disconnect()
-        return response.make_response("system", "log out successfully")
+        return response.make_response("System", "log out successfully")
     else:
-        return response.make_response("system", "user not found")
+        return response.make_response("System", "user not found")
+
+
+# @blueprint.websocket("/a")
+@utils.sio.event
+async def a(phone):  # listen on incoming connection
+    """
+    DEPRECATED ENDPOINT, ONLY FOR TESTING
+    """
+    client = TelegramClient(phone, utils.api_id, utils.api_hash)
+    await client.connect()
+    if await utils.has_session(client, phone):
+        user: telethon.client_describe_obj = await client.get_me()
+        # append into client list !!! todo -> might want to use token instead
+
+        # websocket.send(response.make_response("System", f"Login as {user.id}"))
+        await utils.sio.send(response.make_response("System", f"Login as {user.id}"))
+        # create folder for further usage
+        res = await utils.make_folder(user.id)
+        if res != "":
+            await utils.sio.send(res)  # websocket.send(res)
+
+        utils.client_list[user.id] = client
+
+        dialogs: list[telethon.Dialog] = await client.get_dialogs()
+        # load profile
+        # await utils.send_profile(dialogs, client, user.id)
+        # send unread message count
+        await utils.send_unread_count(dialogs)
+        # listen on message
+        incoming_msg.listen_on(utils.client_list, user)
+
+        await client.run_until_disconnected()
+
+    else:
+        # websocket.send(response.make_response("System", f"login aborted"))
+        await utils.sio.send(response.make_response("System", f"login aborted"))
 
 
 @blueprint.post("/login")
@@ -29,6 +70,10 @@ async def disconnect():
             allow_methods=["POST"],
             allow_origin=["http://localhost:3000"])
 async def login() -> str:  # return userID to frontend
+    """
+    establish connection
+    params(json) : [phone : user's phone to login telegram service]
+    """
     data = await request.get_json()
     phone = data["phone"]
     client = TelegramClient(phone, utils.api_id, utils.api_hash)
@@ -40,9 +85,9 @@ async def login() -> str:  # return userID to frontend
     if await utils.has_session(client, phone):
         me = await client.get_me()
         utils.client_list[me.id] = client
-        return response.make_response("system", f"Login as {me.id}")
+        return response.make_response("System", f"Login as {me.id}")
     else:
-        return response.make_response("system", "please enter the code received in your telegram app")
+        return response.make_response("System", "please enter the code received in your telegram app")
 
 
 @blueprint.post("/verify")
@@ -50,6 +95,11 @@ async def login() -> str:  # return userID to frontend
             allow_methods=["POST"],
             allow_origin=["http://localhost:3000"])
 async def verify():
+    """
+    verify the user phone
+    params(json) : [phone : user's phone to login telegram service,
+    code : the code sent to the user's phone via 777000 channel]
+    """
     data = await request.get_json()
     phone = data["phone"]
     code = data["code"]
@@ -75,23 +125,25 @@ async def verify():
     return "Already Logged in", 406
 
 
-@blueprint.websocket("/conn")
-async def conn():
-    while True:
-        userid = await websocket.receive()
-        client = utils.find_user(utils.client_list, userid)
-        user: telethon.client_describe_obj = await client.get_me()
+# @blueprint.websocket("/conn")
+@utils.sio.event
+async def conn(userid):
+    """
+    persist the user connection and send webhook messages received by telegram
+    """
+    client = utils.find_user(utils.client_list, userid)
+    user: telethon.client_describe_obj = await client.get_me()
 
-        res = await utils.make_folder(user.id)
-        if res != "":
-            await websocket.send(res)
+    res = await utils.make_folder(user.id)
+    if res != "":
+        await utils.sio.send(res)
 
-        utils.client_list[user.id] = client
+    utils.client_list[user.id] = client
 
-        dialogs: list[telethon.Dialog] = await client.get_dialogs()
-        # load profile
-        # await utils.send_profile(dialogs, client, user.id)
-        # send unread message count
-        await utils.send_unread_count(dialogs)
-        # listen on message
-        incoming_msg.listen_on(utils.client_list, user)
+    dialogs: list[telethon.Dialog] = await client.get_dialogs()
+    # load profile
+    # await utils.send_profile(dialogs, client, user.id)
+    # send unread message count
+    await utils.send_unread_count(dialogs)
+    # listen on message
+    incoming_msg.listen_on(utils.client_list, user)
