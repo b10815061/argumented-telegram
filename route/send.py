@@ -16,7 +16,7 @@ async def ws(data):
     """
     DEPRECATED
     TESTING ONLY
-    USE /send ENDPOINT INSTEAD (RESTFUL PORTACLE)
+    USE /send ENDPOINT INSTEAD (RESTFUL PROTOCOL)
     """
     pair = json.loads(data)
     user = (pair["user_id"])
