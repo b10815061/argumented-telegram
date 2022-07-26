@@ -22,6 +22,7 @@
         dataType: 'json' // this implies that the backend should return a json format. If violates, the response will always end in the ".fail block. 
       }).done((res)=>{console.log(res)}
       )
+      return true
     })
 
     function getMessage(channel_id,message_id){
@@ -115,7 +116,6 @@
     }
 
     $(document).ready(function(){
-    var msg = new WebSocket('ws://' + document.domain + ':' + location.port + '/ws');
     var conn = new WebSocket('ws://' + document.domain + ':' + location.port + '/conn');
     // channel & unread msg num map
     var unread_count = new Map();
@@ -126,21 +126,7 @@
     // the offset is in the measure of PST -> multiply -1 to convert to CST
     CST = (offset*-1/60)
 
-    msg.onmessage = function (event) {
-      var messages_dom = document.getElementsByTagName('ul')[0];
-        var message_dom = document.createElement('li');
-        tmp = event.data.replaceAll("\'","\"")
-        try {
-          //conosle.log("in msg")
-          //console.log(JSON.parse(tmp))
-          data = JSON.parse(tmp)
-          var content_dom = document.createTextNode(data.channel +"[" + data.from + "]" + " : " +  data.data);
-        }catch(e){
-          var content_dom = document.createTextNode(event.data);
-        }
-        message_dom.appendChild(content_dom);
-        messages_dom.appendChild(message_dom);
-    };
+
     conn.onmessage = function (event) {
         var messages_dom = document.getElementsByTagName('ul')[0];
         var message_dom = document.createElement('li');
@@ -285,21 +271,53 @@
     })
 
     $('#send').click(()=>{
-        if(msg.readyState==msg.CLOSED){
-          console.log("reconnecting msg")
-          msg = connect('/ws')
+      var package = {
+          "user_id" : user_id,
+          "channel_id" : $("#channel").val(),
+          "message" : $("#message").val()
         }
-        console.log(user_id)
-        let obj = {
-          channel : $('#channel').val(),
-          message : $('#message').val(),
-          user_id : user_id
-        }
-        console.log(obj)
-        msg.send(JSON.stringify(obj))
-        $('#message').val("")
+        $.ajax({
+        url:`http://localhost:5000/send`,
+        data : JSON.stringify(package),
+        method:"POST",
+        contentType :"application/json",
+        dataType: 'json' // this implies that the backend should return a json format. If violates, the response will always end in the ".fail block. 
+        }).done((data)=>{
+        })
         return false
         })
+    $('#pin').click(()=>{
+      var package = {
+        "user_id" : user_id,
+        "channel_id" : $("#pin_channel_id").val(),
+        "message_id" : $("#pin_message_id").val()
+      }
+      $.ajax({
+        url:`http://localhost:5000/pin`,
+        data : JSON.stringify(package),
+        method:"POST",
+        contentType :"application/json",
+        dataType: 'json' // this implies that the backend should return a json format. If violates, the response will always end in the ".fail block. 
+        }).done((data)=>{
+        })
+      return false
+    })
+    $("#mute").click(()=>{
+      var package = {
+        "user_id" : user_id,
+        "channel_id" : $("#mute_channel_id").val(),
+        "state" : true
+      }
+      $.ajax({
+        url:`http://localhost:5000/mute`,
+        data : JSON.stringify(package),
+        method:"POST",
+        contentType :"application/json",
+        dataType: 'json' // this implies that the backend should return a json format. If violates, the response will always end in the ".fail block. 
+        }).done((data)=>{
+        })
+      return false
+    })
     $('#set_pri').click(()=>{
         if(pri.readyState==pri.CLOSED){
           console.log("reconnecting pri")
@@ -351,9 +369,18 @@
         <input type="submit" id="send" value="send">
     </form>
     <form>
+      <input type="text" id="pin_channel_id">
+      <input type="text" id="pin_message_id">
+      <input type="submit" id="pin" value="pin">
+  </form>
+    <form>
       <input type="text" id="pri_channel">
       <input type="text" id="pri">
       <input type="submit" id="set_pri" value="set pri">
+    </form>
+    <form>
+      <input type="text" id="mute_channel_id">
+      <input type="submit" id="mute" value="mute">
     </form>
     <form>
       <input type="text" id="selected_channel">
