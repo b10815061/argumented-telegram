@@ -12,7 +12,7 @@ def init():
     api_id = 12655046
     api_hash = 'd84ab8008abfb3ec244630d2a6778fc6'
     client_list = dict()
-    sio = socketio.AsyncServer(async_mode='asgi')
+    sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
 
 
 # determine the given phone is valid and return True if client login successfully
