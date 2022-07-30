@@ -121,5 +121,6 @@ async def send_profile(dialogs, client, client_id):
                 "id": ID,
                 "name": d.name,
             }
+
             global sio
             await sio.send(obj)  # websocket.send(str(obj).replace("\'", "\""))
