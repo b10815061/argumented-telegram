@@ -72,9 +72,8 @@ async def send_unread_count(dialogs):
             "channel": e[1],
             "count": e[0]
         }
-        # unread = str(unread).replace("\'", "\"")
-        global sio
-        await sio.send(unread) # websocket.send(unread)
+    global sio
+    await sio.send(unread)
 
 
 # iterate through dialog and send profile one by one
@@ -111,5 +110,6 @@ async def send_profile(dialogs, client, client_id):
                 "id": ID,
                 "name": d.name,
             }
+
             global sio
-            await sio.send(obj) # websocket.send(str(obj).replace("\'", "\""))
+            await sio.send(obj)

@@ -122,16 +122,21 @@ async def verify():
             response["phone"] = me.phone
             json_data = json.dumps(response, ensure_ascii=False)
 
+            utils.client_list[me.id] = utils.client_list[phone]
+            del utils.client_list[phone]
+
             return json_data, 200
     return "Already Logged in", 406
 
 
 # @blueprint.websocket("/conn")
 @utils.sio.event
-async def conn(userid):
+async def conn(sid,userid):
     """
     persist the user connection and send webhook messages received by telegram
     """
+
+    print(userid)
     client = utils.find_user(utils.client_list, userid)
     user: telethon.client_describe_obj = await client.get_me()
 

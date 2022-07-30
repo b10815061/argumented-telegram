@@ -37,8 +37,8 @@ def disconnect(sid):
 sio_app = socketio.ASGIApp(utils.sio, app, socketio_path="socket.io")
 
 
-@utils.sio.on("test")
-def test():
+@utils.sio.event
+def test(sid):
     print("test")
 
 
