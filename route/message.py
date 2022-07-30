@@ -64,3 +64,22 @@ async def pin():
             return response.make_response("System", "You are not Connected!")
     else:
         return response.make_response("System", "user not found")
+
+
+@blueprint.post("/ack")
+async def ack():
+    """ read a given channel message /
+    params(json) : [
+    userid : the telegram userID,
+    channel_id : the target channel to ack all unread messages]
+    """
+    data = await request.get_json()
+    user_id = data["user_id"]
+    user = utils.find_user(utils.client_list, user_id)
+    if user != None:
+        if user.is_connect():
+            channel_id = data["channel_id"]
+        else:
+            return response.make_response("System", "You are not connected!")
+    else:
+        return response.make_response("System", "user not found")

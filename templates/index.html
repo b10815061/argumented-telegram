@@ -266,6 +266,10 @@
         return false
     })
     $("#persist").click(()=>{
+      if(conn.readyState==conn.CLOSED){
+          console.log("reconnecting conn")
+          conn = connect('/conn')
+        }
       conn.send($('#userid').val())
       return false
     })

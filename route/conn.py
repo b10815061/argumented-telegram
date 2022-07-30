@@ -20,6 +20,7 @@ async def disconnect():
     userID: str = (request.args.get("user_id"))
     user = utils.find_user(utils.client_list, userID)
     if user != None:
+        utils.remove_from_list(utils.client_list, userID)
         res = await utils.delete_folder(userID)
         if res != "":
             return res
@@ -80,14 +81,13 @@ async def login() -> str:  # return userID to frontend
     client = TelegramClient(phone, utils.api_id, utils.api_hash)
     await client.connect()
 
-    # This line should be added as client can only provide unique phone number
-    utils.client_list[phone] = client
-
     if await utils.has_session(client, phone):
         me = await client.get_me()
         utils.client_list[me.id] = client
         return response.make_response("System", f"Login as {me.id}")
     else:
+        # This line should be added as client can only provide unique phone number
+        utils.client_list[phone] = client
         return response.make_response("System", "please enter the code received in your telegram app")
 
 
@@ -105,25 +105,22 @@ async def verify():
     phone = data["phone"]
     code = data["code"]
 
-    if not await utils.client_list[phone].is_user_authorized():
-        if 'code' in data:
-            try:
-                await utils.client_list[phone].sign_in(phone, code)
-            except:
-                return "Unauthorized", 401
-            me = await utils.client_list[phone].get_me()
+    try:
+        await utils.client_list[phone].sign_in(phone, code)
+    except:
+        return response.make_response("System", "Invalid code", 401)
+    me = await utils.client_list[phone].get_me()
 
-            response = {}
-            response["id"] = me.id
-            response["username"] = me.username
-            response["access_hash"] = me.access_hash
-            response["first_name"] = me.first_name
-            response["last_name"] = me.last_name
-            response["phone"] = me.phone
-            json_data = json.dumps(response, ensure_ascii=False)
+    response = {}
+    response["id"] = me.id
+    response["username"] = me.username
+    response["access_hash"] = me.access_hash
+    response["first_name"] = me.first_name
+    response["last_name"] = me.last_name
+    response["phone"] = me.phone
+    json_data = json.dumps(response, ensure_ascii=False)
 
-            return json_data, 200
-    return "Already Logged in", 406
+    return response.make_response("System", json_data, 200)
 
 
 # @blueprint.websocket("/conn")
