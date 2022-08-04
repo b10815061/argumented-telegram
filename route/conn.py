@@ -44,11 +44,11 @@ async def a(phone):  # listen on incoming connection
         # append into client list !!! todo -> might want to use token instead
 
         # websocket.send(response.make_response("System", f"Login as {user.id}"))
-        await utils.sio.send(response.make_response("System", f"Login as {user.id}"))
+        await utils.sio.emit('a', response.make_response("System", f"Login as {user.id}"))
         # create folder for further usage
         res = await utils.make_folder(user.id)
         if res != "":
-            await utils.sio.send(res)  # websocket.send(res)
+            await utils.sio.emit('a', res)  # websocket.send(res)
 
         utils.client_list[user.id] = client
 
@@ -64,7 +64,7 @@ async def a(phone):  # listen on incoming connection
 
     else:
         # websocket.send(response.make_response("System", f"login aborted"))
-        await utils.sio.send(response.make_response("System", f"login aborted"))
+        await utils.sio.emit('a', response.make_response("System", f"login aborted"))
 
 
 @blueprint.post("/login")
@@ -138,7 +138,7 @@ async def conn(sid, userid):
 
     res = await utils.make_folder(user.id)
     if res != "":
-        await utils.sio.send(res)
+        await utils.sio.emit('conn', res)
 
     utils.client_list[user.id] = client
 

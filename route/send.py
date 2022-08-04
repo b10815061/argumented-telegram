@@ -30,14 +30,13 @@ async def ws(data):
                 print(name)
                 await user.send_message(entity=name, message=pair["message"])
                 # websocket.send(f'{pair["channel"]} : {pair["message"]}')
-                await utils.sio.send(f'{pair["channel"]} : {pair["message"]}')
+                await utils.sio.emit('ws', f'{pair["channel"]} : {pair["message"]}')
                 print("message sent")
             except:
                 # websocket.send(f'you can\'t write in this channel ({pair["channel"]})')
-                await utils.sio.send(f'you can\'t write in this channel ({pair["channel"]})')
+                await utils.sio.emit('ws', f'you can\'t write in this channel ({pair["channel"]})')
         else:
             # websocket.send("System : You are not Connected!")
-            await utils.sio.send("System : You are not Connected!")
+            await utils.sio.emit('ws', "System : You are not Connected!")
     else:
-        # websocket.send("System : user not found")
-        await utils.sio.send("System : user not found")
+        await utils.sio.emit('ws', "System : user not found")
