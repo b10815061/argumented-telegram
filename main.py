@@ -36,11 +36,5 @@ def disconnect(sid):
 
 sio_app = socketio.ASGIApp(utils.sio, app, socketio_path="socket.io")
 
-
-@utils.sio.event
-def test(sid):
-    print("test")
-
-
 if __name__ == "__main__":
     uvicorn.run(sio_app, port=5000)

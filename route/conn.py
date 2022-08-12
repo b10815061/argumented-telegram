@@ -111,19 +111,20 @@ async def verify():
         return response.make_response("System", "Invalid code", 401)
     me = await utils.client_list[phone].get_me()
 
-    response = {}
-    response["id"] = me.id
-    response["username"] = me.username
-    response["access_hash"] = me.access_hash
-    response["first_name"] = me.first_name
-    response["last_name"] = me.last_name
-    response["phone"] = me.phone
-    json_data = json.dumps(response, ensure_ascii=False)
+    res = {}
+    res["id"] = me.id
+    res["username"] = me.username
+    res["access_hash"] = me.access_hash
+    res["first_name"] = me.first_name
+    res["last_name"] = me.last_name
+    res["phone"] = me.phone
+    json_data = json.dumps(res, ensure_ascii=False)
 
+    # Change from Phone to User ID
     utils.client_list[me.id] = utils.client_list[phone]
     del utils.client_list[phone]
 
-    return response.make_response("System", json_data, 200)
+    return json_data, 200
 
 
 # @blueprint.websocket("/conn")
