@@ -44,11 +44,11 @@ async def a(phone):  # listen on incoming connection
         # append into client list !!! todo -> might want to use token instead
 
         # websocket.send(response.make_response("System", f"Login as {user.id}"))
-        await utils.sio.send(response.make_response("System", f"Login as {user.id}"))
+        await utils.sio.emit('a', response.make_response("System", f"Login as {user.id}"))
         # create folder for further usage
         res = await utils.make_folder(user.id)
         if res != "":
-            await utils.sio.send(res)  # websocket.send(res)
+            await utils.sio.emit('a', res)  # websocket.send(res)
 
         utils.client_list[user.id] = client
 
@@ -64,7 +64,7 @@ async def a(phone):  # listen on incoming connection
 
     else:
         # websocket.send(response.make_response("System", f"login aborted"))
-        await utils.sio.send(response.make_response("System", f"login aborted"))
+        await utils.sio.emit('a', response.make_response("System", f"login aborted"))
 
 
 @blueprint.post("/login")
@@ -111,16 +111,42 @@ async def verify():
         return response.make_response("System", "Invalid code", 401)
     me = await utils.client_list[phone].get_me()
 
-    obj = {}
-    obj["id"] = me.id
-    obj["username"] = me.username
-    obj["access_hash"] = me.access_hash
-    obj["first_name"] = me.first_name
-    obj["last_name"] = me.last_name
-    obj["phone"] = me.phone
-    json_data = json.dumps(obj, ensure_ascii=False)
+    res = {}
+    res["id"] = me.id
+    res["username"] = me.username
+    res["access_hash"] = me.access_hash
+    res["first_name"] = me.first_name
+    res["last_name"] = me.last_name
+    res["phone"] = me.phone
+    json_data = json.dumps(res, ensure_ascii=False)
 
+    # Change from Phone to User ID
     utils.client_list[me.id] = utils.client_list[phone]
     del utils.client_list[phone]
 
-    return response.make_response("System", json_data, 200)
+    return json_data, 200
+
+
+# @blueprint.websocket("/conn")
+@utils.sio.event
+async def conn(sid, userid):
+    """
+    persist the user connection and send webhook messages received by telegram
+    """
+
+    client = utils.find_user(utils.client_list, userid)
+    user: telethon.client_describe_obj = await client.get_me()
+
+    res = await utils.make_folder(user.id)
+    if res != "":
+        await utils.sio.emit('conn', res)
+
+    utils.client_list[user.id] = client
+
+    dialogs: list[telethon.Dialog] = await client.get_dialogs()
+    # load profile
+    # await utils.send_profile(dialogs, client, user.id)
+    # send unread message count
+    await utils.send_unread_count(dialogs)
+    # listen on message
+    incoming_msg.listen_on(utils.client_list, user)
