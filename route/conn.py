@@ -84,11 +84,11 @@ async def login() -> str:  # return userID to frontend
     if await utils.has_session(client, phone):
         me = await client.get_me()
         utils.client_list[me.id] = client
-        return response.make_response("System", f"Login as {me.id}")
+        return response.make_response("System", f"Login as {me.id}", 202)
     else:
         # This line should be added as client can only provide unique phone number
         utils.client_list[phone] = client
-        return response.make_response("System", "please enter the code received in your telegram app")
+        return response.make_response("System", "please enter the code received in your telegram app", 200)
 
 
 @blueprint.post("/verify")
@@ -111,41 +111,16 @@ async def verify():
         return response.make_response("System", "Invalid code", 401)
     me = await utils.client_list[phone].get_me()
 
-    response = {}
-    response["id"] = me.id
-    response["username"] = me.username
-    response["access_hash"] = me.access_hash
-    response["first_name"] = me.first_name
-    response["last_name"] = me.last_name
-    response["phone"] = me.phone
-    json_data = json.dumps(response, ensure_ascii=False)
+    obj = {}
+    obj["id"] = me.id
+    obj["username"] = me.username
+    obj["access_hash"] = me.access_hash
+    obj["first_name"] = me.first_name
+    obj["last_name"] = me.last_name
+    obj["phone"] = me.phone
+    json_data = json.dumps(obj, ensure_ascii=False)
 
     utils.client_list[me.id] = utils.client_list[phone]
     del utils.client_list[phone]
 
     return response.make_response("System", json_data, 200)
-
-
-# @blueprint.websocket("/conn")
-@utils.sio.event
-async def conn(sid, userid):
-    """
-    persist the user connection and send webhook messages received by telegram
-    """
-
-    client = utils.find_user(utils.client_list, userid)
-    user: telethon.client_describe_obj = await client.get_me()
-
-    res = await utils.make_folder(user.id)
-    if res != "":
-        await utils.sio.send(res)
-
-    utils.client_list[user.id] = client
-
-    dialogs: list[telethon.Dialog] = await client.get_dialogs()
-    # load profile
-    # await utils.send_profile(dialogs, client, user.id)
-    # send unread message count
-    await utils.send_unread_count(dialogs)
-    # listen on message
-    incoming_msg.listen_on(utils.client_list, user)
