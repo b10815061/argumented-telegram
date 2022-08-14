@@ -14,7 +14,7 @@ async def setPrivacy(userID):
     typeList = [InputPrivacyKeyStatusTimestamp(), InputPrivacyKeyChatInvite(), InputPrivacyKeyPhoneCall()]
     ruleList = [InputPrivacyValueDisallowAll(), InputPrivacyValueAllowAll()]
     values = [ruleList[int(data["value"])]]
-    user: TelegramClient = await find_user(utils.client_list, int(userID))
+    user: TelegramClient = await utils.find_user(utils.client_list, int(userID))
     await user(SetPrivacyRequest(typeList[int(data["type"])], values))
     return "200", 200
 

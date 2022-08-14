@@ -110,6 +110,7 @@ async def verify():
     except:
         return response.make_response("System", "Invalid code", 401)
     me = await utils.client_list[phone].get_me()
+    profile_pic_data = await utils.get_profile_pic(utils.client_list[phone])
 
     res = {}
     res["id"] = me.id
@@ -118,13 +119,43 @@ async def verify():
     res["first_name"] = me.first_name
     res["last_name"] = me.last_name
     res["phone"] = me.phone
+    res["profile_pic"] = profile_pic_data
     json_data = json.dumps(res, ensure_ascii=False)
 
     # Change from Phone to User ID
-    utils.client_list[me.id] = utils.client_list[phone]
-    del utils.client_list[phone]
+    # utils.client_list[me.id] = utils.client_list[phone]
+    # del utils.client_list[phone]
 
     return json_data, 200
+
+# Check authorized yet or not
+@blueprint.post('/checkConnection')
+@route_cors(allow_headers=["content-type"],
+            allow_methods=["POST"], 
+            allow_origin=["http://localhost:3000"])
+async def checkConnection():
+    data = await request.get_json()
+    phone = data["phone"]
+
+    if phone in utils.client_list:
+        me = await utils.client_list[phone].get_me()
+        profile_pic_data = await utils.get_profile_pic(utils.client_list[phone])
+    else:
+        return "Unauthorized_1", 400
+    
+    if(me != None):
+        response = {}
+        response["id"] = me.id
+        response["username"] = me.username
+        response["access_hash"] = me.access_hash
+        response["first_name"] = me.first_name
+        response["last_name"] = me.last_name
+        response["phone"] = me.phone
+        response["profile_pic"] = profile_pic_data
+        json_data = json.dumps(response, ensure_ascii=False)
+        return json_data, 200
+    else:
+        return "Unauthorized_2", 400
 
 
 # @blueprint.websocket("/conn")
@@ -150,3 +181,26 @@ async def conn(sid, userid):
     await utils.send_unread_count(dialogs)
     # listen on message
     incoming_msg.listen_on(utils.client_list, user)
+
+# Logout
+@blueprint.post('/logout')
+@route_cors(allow_headers=["content-type"],
+            allow_methods=["POST"],
+            allow_origin=["http://localhost:3000"])
+async def logout():
+    data = await request.get_json()
+    phone = data["phone"]
+    print(phone)
+
+    try:
+        await utils.client_list[phone].log_out()
+    except:
+        return "Logout failed", 401
+
+    return "Logout Success", 200
+
+
+@utils.sio.event
+async def test(sid):
+    print("test")
+    await utils.pong()
