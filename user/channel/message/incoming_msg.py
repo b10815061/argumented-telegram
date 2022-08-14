@@ -19,6 +19,7 @@ def listen_on(client_list, me):
     """
     @client_list[me.id].on(events.NewMessage())
     async def onMessage(event):
+        print("message incoming : \n")
         print(event.message)
         channel: telethon.Channel = await event.get_chat()
         sender: str = await util.get_sender(event, channel)

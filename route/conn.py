@@ -80,7 +80,6 @@ async def login() -> str:  # return userID to frontend
     phone = data["phone"]
     client = TelegramClient(phone, utils.api_id, utils.api_hash)
     await client.connect()
-
     if await utils.has_session(client, phone):
         me = await client.get_me()
         utils.client_list[me.id] = client
@@ -136,7 +135,7 @@ async def conn(sid, userid):
 
     client = utils.find_user(utils.client_list, userid)
     user: telethon.client_describe_obj = await client.get_me()
-
+    print(userid, "persisting")
     res = await utils.make_folder(user.id)
     if res != "":
         await utils.sio.emit('conn', res)

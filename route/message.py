@@ -1,4 +1,5 @@
 from quart import Blueprint, render_template, request, websocket
+from quart_cors import route_cors
 from telethon.sync import TelegramClient
 from user.channel.message import incoming_msg
 import response
@@ -10,6 +11,9 @@ blueprint = Blueprint("message", __name__)
 
 
 @blueprint.post('/send')
+@route_cors(allow_headers=["content-type"],
+            allow_methods=["POST"],
+            allow_origin=["http://localhost:3000"])
 async def send():
     """send a message to the given channel / 
     params(json) : [user_id : the teletgram userID, 
@@ -17,15 +21,18 @@ async def send():
     message : message to be sent]
     """
     data = await request.get_json()
+    print(data)
+    form = await request.form
+    print(form)
     user_id = data["user_id"]
     channel_id = data["channel_id"]
     message = data["message"]
     user = utils.find_user(utils.client_list, user_id)
+
     if user != None:
         if user.is_connected():
             try:
                 name = await user.get_entity(int(channel_id))
-                print(name)
                 await user.send_message(entity=name, message=message)
                 return response.make_response("System", f'{channel_id} : {message}')
             except Exception as e:

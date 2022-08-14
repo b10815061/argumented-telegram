@@ -16,7 +16,7 @@ async def ws(data):
     """
     DEPRECATED
     TESTING ONLY
-    USE /send ENDPOINT INSTEAD (RESTFUL PROTOCOL)
+    USE /send ENDPOINT INSTEAD (RESTFUL PROTOCOL) (THE ENDPOINT IS IN MESSAGE.PY FILE)
     """
     pair = json.loads(data)
     user = (pair["user_id"])
