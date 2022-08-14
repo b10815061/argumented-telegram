@@ -79,6 +79,7 @@ async def ack():
     if user != None:
         if user.is_connect():
             channel_id = data["channel_id"]
+            await user.send_read_acknowledge(channel_id)
         else:
             return response.make_response("System", "You are not connected!")
     else:

@@ -40,4 +40,4 @@ def listen_on(client_list, me):
         # obj = obj.replace("{'", '{"').replace("'}", '"}')
         # obj = obj.replace("\\\\", "\\")
         # print(obj)
-        await utils.sio.send(obj)
+        await utils.sio.emit("message", obj)

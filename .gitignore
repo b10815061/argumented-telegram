@@ -2,3 +2,4 @@
 **/userid*/
 **/*.jpg
 **/__pycache__/
+*.session-journal

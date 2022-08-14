@@ -84,11 +84,11 @@ async def login() -> str:  # return userID to frontend
     if await utils.has_session(client, phone):
         me = await client.get_me()
         utils.client_list[me.id] = client
-        return response.make_response("System", f"Login as {me.id}")
+        return response.make_response("System", f"Login as {me.id}", 202)
     else:
         # This line should be added as client can only provide unique phone number
         utils.client_list[phone] = client
-        return response.make_response("System", "please enter the code received in your telegram app")
+        return response.make_response("System", "please enter the code received in your telegram app", 200)
 
 
 @blueprint.post("/verify")

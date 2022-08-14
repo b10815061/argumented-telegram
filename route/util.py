@@ -65,11 +65,11 @@ def find_user(client_list, userID) -> telethon.client:
 
 
 def add_to_list(client_list, user_id, user):
-    client_list[user_id] = user
+    client_list[int(user_id)] = user
 
 
 def remove_from_list(client_list, user_id):
-    del client_list[user_id]
+    del client_list[int(user_id)]
 
 # iterate through client's dialog and send unread message count back
 
