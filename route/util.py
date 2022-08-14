@@ -46,6 +46,14 @@ async def delete_folder(client_id) -> str:  # delete user private folder
         shutil.rmtree(path, ignore_errors=True)
         return ""
 
+async def get_profile_pic(client) -> str:
+    path = await client.download_profile_photo('me')
+    with open(path, 'rb') as file:
+        raw_data = file.read()
+        data = base64.b64encode(raw_data).decode()
+    os.remove(path)
+    return data
+
 
 # find the telethon Client instance
 def find_user(client_list, userID) -> telethon.client:
@@ -125,3 +133,7 @@ async def send_profile(dialogs, client, client_id):
 
             global sio
             await sio.emit('send_profile', obj) # websocket.send(str(obj).replace("\'", "\""))
+
+async def pong():
+    global sio
+    await sio.emit("ping","pong")
