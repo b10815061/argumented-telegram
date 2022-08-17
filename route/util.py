@@ -136,4 +136,4 @@ async def send_profile(dialogs, client, client_id):
 
 async def pong():
     global sio
-    await sio.emit("ping","pong")
+    await sio.emit("pong","pong")
