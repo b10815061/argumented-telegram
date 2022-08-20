@@ -122,8 +122,8 @@ async def verify():
     json_data = json.dumps(res, ensure_ascii=False)
 
     # Change from Phone to User ID
-    # utils.client_list[me.id] = utils.client_list[phone]
-    # del utils.client_list[phone]
+    utils.client_list[me.id] = utils.client_list[phone]
+    del utils.client_list[phone]
 
     return json_data, 200
 
@@ -134,13 +134,13 @@ async def verify():
             allow_origin=["http://localhost:3000"])
 async def checkConnection():
     data = await request.get_json()
-    phone = data["phone"]
+    uid = data["uid"]
 
-    if phone in utils.client_list:
-        me = await utils.client_list[phone].get_me()
-        profile_pic_data = await utils.get_profile_pic(utils.client_list[phone])
+    if uid in utils.client_list:
+        me = await utils.client_list[uid].get_me()
+        profile_pic_data = await utils.get_profile_pic(utils.client_list[uid])
     else:
-        return "Unauthorized_1", 400
+        return "Unauthorized", 400
     
     if(me != None):
         response = {}
@@ -154,7 +154,7 @@ async def checkConnection():
         json_data = json.dumps(response, ensure_ascii=False)
         return json_data, 200
     else:
-        return "Unauthorized_2", 400
+        return "Unauthorized", 400
 
 
 # @blueprint.websocket("/conn")
@@ -200,6 +200,6 @@ async def logout():
 
 
 @utils.sio.event
-async def test(sid):
-    print("test")
+async def ping(sid):
+    print("pinged")
     await utils.pong()
