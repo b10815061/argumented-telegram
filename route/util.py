@@ -45,13 +45,18 @@ async def delete_folder(client_id) -> str:  # delete user private folder
         return ""
 
 
-async def get_profile_pic(client) -> str:
-    path = await client.download_profile_photo('me')
-    with open(path, 'rb') as file:
-        raw_data = file.read()
-        data = base64.b64encode(raw_data).decode()
-    os.remove(path)
-    return data
+async def get_profile_pic(client, client_id) -> str:
+
+    # if the user has no photo, it will return None
+    path = await client.download_profile_photo('me', os.path.join(os.getcwd(), f"user/userid{client_id}"))
+    try:
+        with open(path, 'rb') as file:
+            raw_data = file.read()
+            data = base64.b64encode(raw_data).decode()
+        os.remove(path)
+        return data
+    except:
+        return ""
 
 
 # find the telethon Client instance
@@ -128,11 +133,12 @@ async def send_profile(dialogs, client, client_id):
                 "b64": b64,
                 "id": ID,
                 "name": d.name,
+                "unread_count": d.unread_count
             }
 
             global sio
             # websocket.send(str(obj).replace("\'", "\""))
-            await sio.emit('send_profile', obj)
+            await sio.emit('initial', obj)
 
 
 async def pong():

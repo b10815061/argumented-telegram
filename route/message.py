@@ -72,9 +72,9 @@ async def send():
                 return response.make_response("System", f'you can\'t write in this channel ({channel_id})')
         else:
 
-            return response.make_response("System", "You are not Connected!")
+            return response.make_response("System", "You are not Connected!", 400)
     else:
-        return response.make_response("System", "user not found")
+        return response.make_response("System", "user not found", 400)
 
 
 @ blueprint.post("/pin")

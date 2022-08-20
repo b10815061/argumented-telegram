@@ -82,8 +82,22 @@ async def login() -> str:  # return userID to frontend
     await client.connect()
     if await utils.has_session(client, phone):
         me = await client.get_me()
+        profile_pic_data = await utils.get_profile_pic(client, me.id)
+
+        res = {}
+        res["id"] = me.id
+        res["username"] = me.username
+        res["access_hash"] = me.access_hash
+        res["first_name"] = me.first_name
+        res["last_name"] = me.last_name
+        res["phone"] = me.phone
+        res["profile_pic"] = profile_pic_data
+        json_data = json.dumps(res, ensure_ascii=False)
+
+        # Change from Phone to User ID
         utils.client_list[me.id] = client
-        return response.make_response("System", f"Login as {me.id}", 202)
+
+        return json_data, 202
     else:
         # This line should be added as client can only provide unique phone number
         utils.client_list[phone] = client
@@ -109,7 +123,7 @@ async def verify():
     except:
         return response.make_response("System", "Invalid code", 401)
     me = await utils.client_list[phone].get_me()
-    profile_pic_data = await utils.get_profile_pic(utils.client_list[phone])
+    profile_pic_data = await utils.get_profile_pic(utils.client_list[phone], me.id)
 
     res = {}
     res["id"] = me.id
@@ -128,20 +142,25 @@ async def verify():
     return json_data, 200
 
 # Check authorized yet or not
+
+
 @blueprint.post('/checkConnection')
 @route_cors(allow_headers=["content-type"],
-            allow_methods=["POST"], 
+            allow_methods=["POST"],
             allow_origin=["http://localhost:3000"])
 async def checkConnection():
     data = await request.get_json()
+    print(data)
     uid = data["uid"]
+    print(uid)
+    client = utils.find_user(utils.client_list, uid)
 
-    if uid in utils.client_list:
-        me = await utils.client_list[uid].get_me()
-        profile_pic_data = await utils.get_profile_pic(utils.client_list[uid])
+    if client != None:
+        me = await client.get_me()
+        profile_pic_data = await utils.get_profile_pic(client, me.id)
     else:
         return "Unauthorized", 400
-    
+
     if(me != None):
         response = {}
         response["id"] = me.id
@@ -174,14 +193,14 @@ async def conn(sid, userid):
     utils.client_list[user.id] = client
 
     dialogs: list[telethon.Dialog] = await client.get_dialogs()
-    # load profile
-    # await utils.send_profile(dialogs, client, user.id)
-    # send unread message count
-    await utils.send_unread_count(dialogs)
+    # send profile and unread count
+    await utils.send_profile(dialogs, client, user.id)
     # listen on message
     incoming_msg.listen_on(utils.client_list, user)
 
 # Logout
+
+
 @blueprint.post('/logout')
 @route_cors(allow_headers=["content-type"],
             allow_methods=["POST"],
