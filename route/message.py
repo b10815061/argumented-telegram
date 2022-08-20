@@ -6,8 +6,43 @@ import response
 import route.util as utils
 import telethon
 import json
+import os
+from pprint import pprint
 
 blueprint = Blueprint("message", __name__)
+
+
+@blueprint.post("/sendFile")
+@route_cors(allow_headers=["content-type"],
+            allow_methods=["POST"],
+            allow_origin=["http://localhost:3000"])
+async def sendFile():
+    try:
+        data: quart.datastruture.FieldStorage = await request.files
+        print(data)
+        file = data["file"]
+        print(file)
+        user_id = int(request.args.get("user_id"))
+        channel_id = int(request.args.get("channel_id"))
+        print(user_id, channel_id)
+        user = utils.find_user(utils.client_list, user_id)
+        if user != None:
+            if user.is_connected():
+                des = os.path.join(os.getcwd(), "user",
+                                   f"userid{user_id}", file.filename)
+
+                await file.save(destination=des)
+                await user.send_file(channel_id, des)
+
+                os.remove(des)
+                return response.make_response("System", f"{file.filename} sent")
+            else:
+                return response.make_response("System", "You are not Connected!")
+        else:
+            return response.make_response("System", "user not found")
+    except Exception as e:
+        print(e)
+        return response.make_response("System", "Internal Server Error", 500)
 
 
 @blueprint.post('/send')
@@ -15,15 +50,12 @@ blueprint = Blueprint("message", __name__)
             allow_methods=["POST"],
             allow_origin=["http://localhost:3000"])
 async def send():
-    """send a message to the given channel / 
-    params(json) : [user_id : the teletgram userID, 
-    channel_id : the telegram channelID, 
+    """send a message to the given channel /
+    params(json) : [user_id : the teletgram userID,
+    channel_id : the telegram channelID,
     message : message to be sent]
     """
     data = await request.get_json()
-    print(data)
-    form = await request.form
-    print(form)
     user_id = data["user_id"]
     channel_id = data["channel_id"]
     message = data["message"]
@@ -45,10 +77,10 @@ async def send():
         return response.make_response("System", "user not found")
 
 
-@blueprint.post("/pin")
+@ blueprint.post("/pin")
 async def pin():
     """pin a messaage in the channel /
-    params(json) : [user_id : the telegram userID, 
+    params(json) : [user_id : the telegram userID,
     channel_id : the telegram channelID,
     message_id : the to-be-pinned messageID]
     """
@@ -73,7 +105,7 @@ async def pin():
         return response.make_response("System", "user not found")
 
 
-@blueprint.post("/ack")
+@ blueprint.post("/ack")
 async def ack():
     """ read a given channel message /
     params(json) : [

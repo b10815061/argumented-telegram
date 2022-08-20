@@ -8,12 +8,10 @@ import telethon
 import socketio
 
 
-def init():
-    global client_list, api_hash, api_id, sio
-    api_id = 12655046
-    api_hash = 'd84ab8008abfb3ec244630d2a6778fc6'
-    client_list = dict()
-    sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
+api_id = 12655046
+api_hash = 'd84ab8008abfb3ec244630d2a6778fc6'
+client_list = dict()
+sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
 
 
 # determine the given phone is valid and return True if client login successfully
@@ -45,6 +43,7 @@ async def delete_folder(client_id) -> str:  # delete user private folder
     else:
         shutil.rmtree(path, ignore_errors=True)
         return ""
+
 
 async def get_profile_pic(client) -> str:
     path = await client.download_profile_photo('me')
@@ -93,7 +92,7 @@ async def send_unread_count(dialogs):
         # unread = str(unread).replace("\'", "\"")
 
         global sio
-        await sio.emit('send_unread_count', unread) # websocket.send(unread)
+        await sio.emit('initial', unread)  # websocket.send(unread)
 
 
 # iterate through dialog and send profile one by one
@@ -132,8 +131,10 @@ async def send_profile(dialogs, client, client_id):
             }
 
             global sio
-            await sio.emit('send_profile', obj) # websocket.send(str(obj).replace("\'", "\""))
+            # websocket.send(str(obj).replace("\'", "\""))
+            await sio.emit('send_profile', obj)
+
 
 async def pong():
     global sio
-    await sio.emit("ping","pong")
+    await sio.emit("ping", "pong")

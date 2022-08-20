@@ -1,15 +1,12 @@
-from route.channel import blueprint as channel_blueprint
-from route.message import blueprint as message_blueprint
-from route.setting import blueprint as setting_blueprint
-from route.conn import blueprint as conn_blueprint
-from route.base import blueprint as base_blueprint
-from quart import Quart
-import socketio
-import uvicorn
-
 import route.util as utils
-
-utils.init()
+import uvicorn
+import socketio
+from quart import Quart
+from route.base import blueprint as base_blueprint
+from route.conn import blueprint as conn_blueprint
+from route.setting import blueprint as setting_blueprint
+from route.message import blueprint as message_blueprint
+from route.channel import blueprint as channel_blueprint
 
 
 app = Quart(__name__)
