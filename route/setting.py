@@ -3,8 +3,10 @@ from quart import Blueprint, Request, ResponseReturnValue, request
 from telethon import TelegramClient
 from telethon.tl.functions.account import GetGlobalPrivacySettingsRequest, SetPrivacyRequest, GetPrivacyRequest, UpdateProfileRequest, UpdateUsernameRequest
 from telethon.tl.types import InputPrivacyKeyStatusTimestamp, InputPrivacyKeyChatInvite, InputPrivacyKeyPhoneCall, InputPrivacyKeyPhoneP2P, InputPrivacyKeyForwards, InputPrivacyKeyProfilePhoto, InputPrivacyKeyPhoneNumber, InputPrivacyKeyAddedByPhone, InputPrivacyValueDisallowAll, InputPrivacyValueAllowAll
+from telethon.tl.functions.photos import UploadProfilePhotoRequest
 import route.util as utils
 import telethon
+import base64
 
 blueprint = Blueprint("setting", __name__)
 
@@ -91,4 +93,22 @@ async def updateUsername(id):
     if not("name" in data):
         return "no new name", 404
     await user(UpdateUsernameRequest(data["name"]))
+    return "OK", 200
+
+"""
+job:    update profile photo
+route:  POST "/setting/photo/<id>"
+input:  photo: new photo in base64 (json)
+output: OK, 200
+"""
+@blueprint.post("/setting/photo/<id>")
+async def updatePhoto(id):
+    data = await request.get_json()
+    user: TelegramClient = utils.find_user(utils.client_list, int(id))
+    if user == None:
+        return "user not found / not login", 404
+    if not("photo" in data):
+        return "no new photo", 404
+    file = base64.b64decode(s=data["photo"])
+    await user(UploadProfilePhotoRequest(await user.upload_file(file)))
     return "OK", 200
