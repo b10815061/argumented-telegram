@@ -121,18 +121,18 @@ async def checkConnection():
         me = await client.get_me()
         profile_pic_data = await utils.get_profile_pic(client, me.id)
     else:
-        return "Unauthorized", 401
+        return response.make_response("System", "Unauthorized", 401)
 
     if(me != None):
-        response = {}
-        response["id"] = me.id
-        response["username"] = me.username
-        response["access_hash"] = me.access_hash
-        response["first_name"] = me.first_name
-        response["last_name"] = me.last_name
-        response["phone"] = me.phone
-        response["profile_pic"] = profile_pic_data
-        json_data = json.dumps(response, ensure_ascii=False)
+        result = {}
+        result["id"] = me.id
+        result["username"] = me.username
+        result["access_hash"] = me.access_hash
+        result["first_name"] = me.first_name
+        result["last_name"] = me.last_name
+        result["phone"] = me.phone
+        result["profile_pic"] = profile_pic_data
+        json_data = json.dumps(result, ensure_ascii=False)
         return response.make_response("System", json_data, 200)
     else:
         return response.make_response("System", "Unauthorized", 401)
