@@ -64,7 +64,7 @@ async def login() -> str:  # return userID to frontend
     else:
         # This line should be added as client can only provide unique phone number
         utils.client_list[phone] = client
-        return response.make_response("System", "please enter the code received in your telegram app", 400)
+        return response.make_response("System", "please enter the code received in your telegram app", 200)
 
 
 @blueprint.post("/verify")

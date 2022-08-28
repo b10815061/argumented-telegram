@@ -1,6 +1,11 @@
+from dotenv import load_dotenv
+
+load_dotenv()  # take environment variables from .env.
+
 import route.util as utils
 import uvicorn
 import socketio
+import os
 from quart import Quart
 from quart_cors import cors
 from route.base import blueprint as base_blueprint
@@ -14,7 +19,7 @@ app = Quart(__name__)
 app = cors(app_or_blueprint=app,
            allow_headers=["content-type"],
            allow_methods=["GET", "POST"],
-           allow_origin=["http://localhost:3000"])
+           allow_origin=[os.getenv("FRONTEND_SITE")])
 
 app.register_blueprint(base_blueprint)
 app.register_blueprint(conn_blueprint)
