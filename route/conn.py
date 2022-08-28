@@ -23,11 +23,11 @@ async def disconnect():
         utils.remove_from_list(utils.client_list, userID)
         res = await utils.delete_folder(userID)
         if res != "":
-            return res
+            return response.make_response("System", res, 200)
         await user.disconnect()
-        return response.make_response("System", "log out successfully")
+        return response.make_response("System", "log out successfully", 200)
     else:
-        return response.make_response("System", "user not found")
+        return response.make_response("System", "user not found", 404)
 
 
 @blueprint.post("/login")
@@ -60,7 +60,7 @@ async def login() -> str:  # return userID to frontend
         # Change from Phone to User ID
         utils.client_list[me.id] = client
 
-        return json_data, 202
+        return response.make_response("System", json_data, 202)
     else:
         # This line should be added as client can only provide unique phone number
         utils.client_list[phone] = client
@@ -102,7 +102,7 @@ async def verify():
     utils.client_list[me.id] = utils.client_list[phone]
     del utils.client_list[phone]
 
-    return json_data, 200
+    return response.make_response("System", json_data, 200)
 
 
 # Check authorized yet or not
@@ -121,7 +121,7 @@ async def checkConnection():
         me = await client.get_me()
         profile_pic_data = await utils.get_profile_pic(client, me.id)
     else:
-        return "Unauthorized", 400
+        return "Unauthorized", 401
 
     if(me != None):
         response = {}
@@ -133,9 +133,9 @@ async def checkConnection():
         response["phone"] = me.phone
         response["profile_pic"] = profile_pic_data
         json_data = json.dumps(response, ensure_ascii=False)
-        return json_data, 200
+        return response.make_response("System", json_data, 200)
     else:
-        return "Unauthorized", 400
+        return response.make_response("System", "Unauthorized", 401)
 
 
 @utils.sio.event
@@ -173,6 +173,6 @@ async def logout():
     try:
         await utils.client_list[phone].log_out()
     except:
-        return "Logout failed", 401
+        return response.make_response("System", "Logout failed", 400)
 
-    return "Logout Success", 200
+    return response.make_response("System", "Logout Success", 200)

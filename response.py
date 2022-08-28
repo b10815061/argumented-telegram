@@ -9,4 +9,4 @@ def make_response(tag, context, code=200) -> string:
     }
 
     response = str(obj).replace("\'", "\"")
-    return response
+    return response, code

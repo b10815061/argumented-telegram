@@ -35,11 +35,11 @@ async def sendFile():
                 await user.send_file(channel_id, des)
 
                 os.remove(des)
-                return response.make_response("System", f"{file.filename} sent")
+                return response.make_response("System", f"{file.filename} sent", 200)
             else:
-                return response.make_response("System", "You are not Connected!")
+                return response.make_response("System", "You are not Connected!", 400)
         else:
-            return response.make_response("System", "user not found")
+            return response.make_response("System", "user not found", 404)
     except Exception as e:
         print(e)
         return response.make_response("System", "Internal Server Error", 500)
@@ -66,15 +66,15 @@ async def send():
             try:
                 name = await user.get_entity(int(channel_id))
                 await user.send_message(entity=name, message=message)
-                return response.make_response("System", f'{channel_id} : {message}')
+                return response.make_response("System", f'{channel_id} : {message}', 200)
             except Exception as e:
                 print(e)
-                return response.make_response("System", f'you can\'t write in this channel ({channel_id})')
+                return response.make_response("System", f'you can\'t write in this channel ({channel_id})', 401)
         else:
 
             return response.make_response("System", "You are not Connected!", 400)
     else:
-        return response.make_response("System", "user not found", 400)
+        return response.make_response("System", "user not found", 404)
 
 
 @ blueprint.post("/pin")
@@ -94,15 +94,15 @@ async def pin():
             try:
                 name = await user.get_entity(int(channel_id))
                 await user.pin_message(entity=name, message=int(message_id))
-                return response.make_response("System", f'{channel_id} : {message_id}')
+                return response.make_response("System", f'{channel_id} : {message_id}', 200)
             except Exception as e:
                 print(e)
-                return response.make_response("System", f'you can\'t pin in this channel ({channel_id})')
+                return response.make_response("System", f'you can\'t pin in this channel ({channel_id})', 401)
         else:
 
-            return response.make_response("System", "You are not Connected!")
+            return response.make_response("System", "You are not Connected!", 400)
     else:
-        return response.make_response("System", "user not found")
+        return response.make_response("System", "user not found", 404)
 
 
 @ blueprint.post("/ack")
@@ -120,6 +120,6 @@ async def ack():
             channel_id = data["channel_id"]
             await user.send_read_acknowledge(channel_id)
         else:
-            return response.make_response("System", "You are not connected!")
+            return response.make_response("System", "You are not connected!", 400)
     else:
-        return response.make_response("System", "user not found")
+        return response.make_response("System", "user not found", 404)
