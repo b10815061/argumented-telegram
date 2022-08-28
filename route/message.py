@@ -1,5 +1,5 @@
 from quart import Blueprint, render_template, request, websocket
-from quart_cors import route_cors
+# from quart_cors import route_cors
 from telethon.sync import TelegramClient
 from user.channel.message import incoming_msg
 import response
@@ -13,9 +13,9 @@ blueprint = Blueprint("message", __name__)
 
 
 @blueprint.post("/sendFile")
-@route_cors(allow_headers=["content-type"],
-            allow_methods=["POST"],
-            allow_origin=["http://localhost:3000"])
+# @route_cors(allow_headers=["content-type"],
+#             allow_methods=["POST"],
+#             allow_origin=["http://localhost:3000"])
 async def sendFile():
     try:
         data: quart.datastruture.FieldStorage = await request.files
@@ -46,9 +46,9 @@ async def sendFile():
 
 
 @blueprint.post('/send')
-@route_cors(allow_headers=["content-type"],
-            allow_methods=["POST"],
-            allow_origin=["http://localhost:3000"])
+# @route_cors(allow_headers=["content-type"],
+#             allow_methods=["POST"],
+#             allow_origin=["http://localhost:3000"])
 async def send():
     """send a message to the given channel /
     params(json) : [user_id : the teletgram userID,

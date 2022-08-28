@@ -2,6 +2,7 @@ import route.util as utils
 import uvicorn
 import socketio
 from quart import Quart
+from quart_cors import cors
 from route.base import blueprint as base_blueprint
 from route.conn import blueprint as conn_blueprint
 from route.setting import blueprint as setting_blueprint
@@ -10,6 +11,10 @@ from route.channel import blueprint as channel_blueprint
 
 
 app = Quart(__name__)
+app = cors(app_or_blueprint=app,
+           allow_headers=["content-type"],
+           allow_methods=["GET", "POST"],
+           allow_origin=["http://localhost:3000"])
 
 app.register_blueprint(base_blueprint)
 app.register_blueprint(conn_blueprint)

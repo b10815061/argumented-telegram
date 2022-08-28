@@ -1,5 +1,5 @@
 from quart import Blueprint, request  # , websocket
-from quart_cors import route_cors
+# from quart_cors import route_cors
 from telethon.sync import TelegramClient
 from user.channel.message import incoming_msg
 import response
@@ -31,9 +31,9 @@ async def disconnect():
 
 
 @blueprint.post("/login")
-@route_cors(allow_headers=["content-type"],
-            allow_methods=["POST"],
-            allow_origin=["http://localhost:3000"])
+# @route_cors(allow_headers=["content-type"],
+#             allow_methods=["POST"],
+#             allow_origin=["http://localhost:3000"])
 async def login() -> str:  # return userID to frontend
     """
     establish connection
@@ -64,13 +64,13 @@ async def login() -> str:  # return userID to frontend
     else:
         # This line should be added as client can only provide unique phone number
         utils.client_list[phone] = client
-        return response.make_response("System", "please enter the code received in your telegram app", 200)
+        return response.make_response("System", "please enter the code received in your telegram app", 400)
 
 
 @blueprint.post("/verify")
-@route_cors(allow_headers=["content-type"],
-            allow_methods=["POST"],
-            allow_origin=["http://localhost:3000"])
+# @route_cors(allow_headers=["content-type"],
+#             allow_methods=["POST"],
+#             allow_origin=["http://localhost:3000"])
 async def verify():
     """
     verify the user phone
@@ -107,9 +107,9 @@ async def verify():
 
 # Check authorized yet or not
 @blueprint.post('/checkConnection')
-@route_cors(allow_headers=["content-type"],
-            allow_methods=["POST"],
-            allow_origin=["http://localhost:3000"])
+# @route_cors(allow_headers=["content-type"],
+#             allow_methods=["POST"],
+#             allow_origin=["http://localhost:3000"])
 async def checkConnection():
     data = await request.get_json()
     print(data)
@@ -162,9 +162,9 @@ async def conn(sid, userid):
 
 # Logout
 @blueprint.post('/logout')
-@route_cors(allow_headers=["content-type"],
-            allow_methods=["POST"],
-            allow_origin=["http://localhost:3000"])
+# @route_cors(allow_headers=["content-type"],
+#             allow_methods=["POST"],
+#             allow_origin=["http://localhost:3000"])
 async def logout():
     data = await request.get_json()
     phone = data["phone"]
