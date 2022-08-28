@@ -18,21 +18,6 @@ app.register_blueprint(setting_blueprint)
 app.register_blueprint(channel_blueprint)
 
 
-@utils.sio.event
-def connect(sid, environ):
-    print("connect ", sid)
-
-
-@utils.sio.event
-async def chat_message(sid, data):
-    print("message ", data)
-
-
-@utils.sio.event
-def disconnect(sid):
-    print('disconnect ', sid)
-
-
 sio_app = socketio.ASGIApp(utils.sio, app, socketio_path="socket.io")
 
 if __name__ == "__main__":
