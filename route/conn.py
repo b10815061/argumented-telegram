@@ -30,43 +30,6 @@ async def disconnect():
         return response.make_response("System", "user not found")
 
 
-# @blueprint.websocket("/a")
-@utils.sio.event
-async def a(phone):  # listen on incoming connection
-    """
-    DEPRECATED ENDPOINT, ONLY FOR TESTING
-    USE /login AND /conn INSTEAD (RESTFUL FOR SIGN IN, AND SOCKET FOR PERSISTING)
-    """
-    client = TelegramClient(phone, utils.api_id, utils.api_hash)
-    await client.connect()
-    if await utils.has_session(client, phone):
-        user: telethon.client_describe_obj = await client.get_me()
-        # append into client list !!! todo -> might want to use token instead
-
-        # websocket.send(response.make_response("System", f"Login as {user.id}"))
-        await utils.sio.emit('a', response.make_response("System", f"Login as {user.id}"))
-        # create folder for further usage
-        res = await utils.make_folder(user.id)
-        if res != "":
-            await utils.sio.emit('a', res)  # websocket.send(res)
-
-        utils.client_list[user.id] = client
-
-        dialogs: list[telethon.Dialog] = await client.get_dialogs()
-        # load profile
-        # await utils.send_profile(dialogs, client, user.id)
-        # send unread message count
-        await utils.send_unread_count(dialogs)
-        # listen on message
-        incoming_msg.listen_on(utils.client_list, user)
-
-        await client.run_until_disconnected()
-
-    else:
-        # websocket.send(response.make_response("System", f"login aborted"))
-        await utils.sio.emit('a', response.make_response("System", f"login aborted"))
-
-
 @blueprint.post("/login")
 @route_cors(allow_headers=["content-type"],
             allow_methods=["POST"],
@@ -141,9 +104,8 @@ async def verify():
 
     return json_data, 200
 
+
 # Check authorized yet or not
-
-
 @blueprint.post('/checkConnection')
 @route_cors(allow_headers=["content-type"],
             allow_methods=["POST"],
@@ -176,7 +138,6 @@ async def checkConnection():
         return "Unauthorized", 400
 
 
-# @blueprint.websocket("/conn")
 @utils.sio.event
 async def conn(sid, userid):
     """
@@ -198,9 +159,8 @@ async def conn(sid, userid):
     # listen on message
     incoming_msg.listen_on(utils.client_list, user)
 
+
 # Logout
-
-
 @blueprint.post('/logout')
 @route_cors(allow_headers=["content-type"],
             allow_methods=["POST"],
@@ -216,9 +176,3 @@ async def logout():
         return "Logout failed", 401
 
     return "Logout Success", 200
-
-
-@utils.sio.event
-async def ping(sid):
-    print("pinged")
-    await utils.pong()

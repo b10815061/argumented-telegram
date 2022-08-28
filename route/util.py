@@ -139,8 +139,3 @@ async def send_profile(dialogs, client, client_id):
             global sio
             # websocket.send(str(obj).replace("\'", "\""))
             await sio.emit('initial', obj)
-
-
-async def pong():
-    global sio
-    await sio.emit("pong", "pong")
