@@ -167,11 +167,10 @@ async def conn(sid, userid):
 #             allow_origin=["http://localhost:3000"])
 async def logout():
     data = await request.get_json()
-    phone = data["phone"]
-    print(phone)
+    uid = data["uid"]
 
     try:
-        await utils.client_list[phone].log_out()
+        await utils.client_list[uid].log_out()
     except:
         return response.make_response("System", "Logout failed", 400)
 
