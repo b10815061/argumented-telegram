@@ -55,12 +55,12 @@ async def login() -> str:  # return userID to frontend
         res["last_name"] = me.last_name
         res["phone"] = me.phone
         res["profile_pic"] = profile_pic_data
-        json_data = json.dumps(res, ensure_ascii=False)
+        # json_data = json.dumps(res, ensure_ascii=False)
 
         # Change from Phone to User ID
         utils.client_list[me.id] = client
 
-        return response.make_response("System", json_data, 202)
+        return response.make_response("System", res, 202)
     else:
         # This line should be added as client can only provide unique phone number
         utils.client_list[phone] = client
@@ -96,13 +96,13 @@ async def verify():
     res["last_name"] = me.last_name
     res["phone"] = me.phone
     res["profile_pic"] = profile_pic_data
-    json_data = json.dumps(res, ensure_ascii=False)
+    # json_data = json.dumps(res, ensure_ascii=False)
 
     # Change from Phone to User ID
     utils.client_list[me.id] = utils.client_list[phone]
     del utils.client_list[phone]
 
-    return response.make_response("System", json_data, 200)
+    return response.make_response("System", res, 200)
 
 
 # Check authorized yet or not
@@ -124,16 +124,16 @@ async def checkConnection():
         return response.make_response("System", "Unauthorized", 401)
 
     if(me != None):
-        result = {}
-        result["id"] = me.id
-        result["username"] = me.username
-        result["access_hash"] = me.access_hash
-        result["first_name"] = me.first_name
-        result["last_name"] = me.last_name
-        result["phone"] = me.phone
-        result["profile_pic"] = profile_pic_data
-        json_data = json.dumps(result, ensure_ascii=False)
-        return response.make_response("System", json_data, 200)
+        res = {}
+        res["id"] = me.id
+        res["username"] = me.username
+        res["access_hash"] = me.access_hash
+        res["first_name"] = me.first_name
+        res["last_name"] = me.last_name
+        res["phone"] = me.phone
+        res["profile_pic"] = profile_pic_data
+        # json_data = json.dumps(result, ensure_ascii=False)
+        return response.make_response("System", res, 200)
     else:
         return response.make_response("System", "Unauthorized", 401)
 

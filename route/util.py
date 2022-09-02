@@ -39,7 +39,7 @@ async def make_folder(client_id) -> str:  # create user private folder
 async def delete_folder(client_id) -> str:  # delete user private folder
     path = f"./user/userid{client_id}"
     if not os.path.exists(path):
-        return response.make_response("system", "Error deleting folder", 500)
+        return "Error deleting folder"
     else:
         shutil.rmtree(path, ignore_errors=True)
         return ""
