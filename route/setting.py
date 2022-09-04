@@ -57,7 +57,7 @@ async def index(id) -> ResponseReturnValue:
         return response.make_response("System", "type not found", 404)
 
     result = await user(GetPrivacyRequest(typeList[int(typeChose)]))
-    return response.make_response("System", result, 200)
+    return response.make_response("System", result.to_dict(), 200)
 
 """
 job:    update profile
