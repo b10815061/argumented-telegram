@@ -23,7 +23,7 @@ async def mute():
     channel_id = data["channel_id"]
     state = data["state"]
     print(state)
-    user = utils.find_user(utils.client_list, user_id)
+    user = await utils.find_user(utils.client_list, user_id)
 
     if user != None:
         result = await user(functions.account.UpdateNotifySettingsRequest(

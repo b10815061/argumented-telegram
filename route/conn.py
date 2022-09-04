@@ -18,7 +18,7 @@ async def disconnect():
     returns -> 200 : success / TODO : 404
     """
     userID: str = (request.args.get("user_id"))
-    user = utils.find_user(utils.client_list, userID)
+    user = await utils.find_user(utils.client_list, userID)
     if user != None:
         utils.remove_from_list(utils.client_list, userID)
         res = await utils.delete_folder(userID)
@@ -115,7 +115,7 @@ async def checkConnection():
     print(data)
     uid = data["uid"]
     print(uid)
-    client = utils.find_user(utils.client_list, uid)
+    client = await utils.find_user(utils.client_list, uid)
 
     if client != None:
         me = await client.get_me()
@@ -144,7 +144,7 @@ async def conn(sid, userid):
     persist the user connection and send webhook messages received by telegram
     """
 
-    client = utils.find_user(utils.client_list, userid)
+    client = await utils.find_user(utils.client_list, userid)
     user: telethon.client_describe_obj = await client.get_me()
     print(userid, "persisting")
     res = await utils.make_folder(user.id)

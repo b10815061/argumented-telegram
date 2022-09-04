@@ -6,12 +6,42 @@ import os
 import shutil
 import telethon
 import socketio
-
+from telethon.sync import TelegramClient
+from os import listdir
+from os.path import isfile, join
 
 api_id = 12655046
 api_hash = 'd84ab8008abfb3ec244630d2a6778fc6'
 client_list = dict()
 sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
+session_list = dict()
+
+# init server & set up variables
+def init():
+    load_session_file()
+
+# auto load .session into client_list
+def load_session_file():
+    global api_id
+    global api_hash
+    global client_list
+    global session_list
+    sessionpath = "./"
+    files = listdir(sessionpath)
+    for f in files:
+        fullpath = join(sessionpath, f)
+        if isfile(fullpath) and f.split('.')[-1] == 'session':
+            client = TelegramClient(f.split('.')[0], api_id, api_hash)
+            print(client)
+            client.connect()
+            if client.is_user_authorized():
+                print("session success: ", f)
+                me = client.get_me()
+                session_list[me.id] = f.split('.')[0]
+                #  client_list[me.id] = client
+            else:
+                print("session failed: ", f)
+            client.disconnect()
 
 
 # determine the given phone is valid and return True if client login successfully
@@ -60,9 +90,15 @@ async def get_profile_pic(client, client_id) -> str:
 
 
 # find the telethon Client instance
-def find_user(client_list, userID) -> telethon.client:
+async def find_user(client_list, userID) -> telethon.client:
+    global session_list
     userID = int(userID)
     if userID in client_list:
+        return client_list[userID]
+    elif userID in session_list:
+        client = TelegramClient(session_list[userID], api_id, api_hash)
+        await client.connect()
+        client_list[userID] = client
         return client_list[userID]
     else:
         return None

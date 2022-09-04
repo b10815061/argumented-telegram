@@ -32,7 +32,7 @@ async def setPrivacy(id):
         return response.make_response("System", "rule not found", 404)
 
     values = [ruleList[int(data["value"])]]
-    user = utils.find_user(utils.client_list, int(id))
+    user = await utils.find_user(utils.client_list, int(id))
     if user == None:
         return response.make_response("System", "user not found / not login", 404)
     await user(SetPrivacyRequest(typeList[int(data["type"])], values))
@@ -47,9 +47,9 @@ output: stringify setting situation, 200
 @blueprint.get("/setting/privacy/<id>")
 async def index(id) -> ResponseReturnValue:
     print(utils.client_list)
+    print(utils.session_list)
     print(id)
-    user = utils.find_user(utils.client_list, int(id))
-
+    user = await utils.find_user(utils.client_list, int(id))
     if user == None:
         return response.make_response("System", "user not found / not login", 404)
     typeChose = request.args.get("type")
@@ -68,7 +68,7 @@ output: OK, 200
 @blueprint.post("/setting/profile/<id>")
 async def updateProfile(id):
     data = await request.get_json()
-    user: TelegramClient = utils.find_user(utils.client_list, int(id))
+    user: TelegramClient = await utils.find_user(utils.client_list, int(id))
     if user == None:
         return response.make_response("System", "user not found / not login", 404)
     if "about" in data:
@@ -88,7 +88,7 @@ output: OK, 200
 @blueprint.post("/setting/username/<id>")
 async def updateUsername(id):
     data = await request.get_json()
-    user: TelegramClient = utils.find_user(utils.client_list, int(id))
+    user: TelegramClient = await utils.find_user(utils.client_list, int(id))
     if user == None:
         return response.make_response("System", "user not found / not login", 404)
     if not("name" in data):
@@ -105,7 +105,7 @@ output: OK, 200
 @blueprint.post("/setting/photo/<id>")
 async def updatePhoto(id):
     data = await request.get_json()
-    user: TelegramClient = utils.find_user(utils.client_list, int(id))
+    user: TelegramClient = await utils.find_user(utils.client_list, int(id))
     if user == None:
         return response.make_response("System", "user not found / not login", 404)
     if not("photo" in data):
