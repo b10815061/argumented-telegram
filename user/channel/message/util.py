@@ -56,7 +56,11 @@ async def context_handler(client_id, client, message) -> Tuple[str, str]:
     else:
         tag = "message"
         data = message.message
-        context = data.replace("\\", "\\\\").replace("\"", "\\\"")
+        try:
+            context = data.replace("\\", "\\\\").replace("\"", "\\\"")
+        except:
+            context = data
+
     return tag, context
 
 

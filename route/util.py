@@ -6,6 +6,7 @@ import os
 import shutil
 import telethon
 import socketio
+from user.channel.message import util as message_utils
 
 
 api_id = 12655046
@@ -46,7 +47,6 @@ async def delete_folder(client_id) -> str:  # delete user private folder
 
 
 async def get_profile_pic(client, client_id) -> str:
-
     # if the user has no photo, it will return None
     path = await client.download_profile_photo('me', os.path.join(os.getcwd(), f"user/userid{client_id}"))
     try:
@@ -79,6 +79,10 @@ def remove_from_list(client_list, user_id):
 
 
 async def send_unread_count(dialogs):
+    """
+    DEPRECATED
+    MERGED WITH SEND PROFILE FUNCTION
+    """
     x = []
     for d in dialogs:
         if(type(d.message.peer_id) == telethon.tl.types.PeerChannel):
@@ -111,6 +115,11 @@ async def send_profile(dialogs, client, client_id):
         else:
             ID = d.message.peer_id.user_id
         path = f"./user/userid{client_id}/{ID}.png"
+        message_list = await client.get_messages(d, 1)
+        message = message_list[0]
+        tag, context = await message_utils.context_handler(
+            client_id, client, message)
+
         # this might not download successfully if user has no profile
         await client.download_profile_photo(d, file=path, download_big=False)
         try:
@@ -127,12 +136,15 @@ async def send_profile(dialogs, client, client_id):
             os.remove(thumbpath)
         except:
             b64 = "no profile"
+
         finally:
             obj = {
                 "tag": "profile",
                 "b64": b64,
                 "id": ID,
                 "name": d.name,
+                "last_message_tag": tag,
+                "last_message": context,
                 "unread_count": d.unread_count
             }
 

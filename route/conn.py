@@ -195,6 +195,8 @@ async def conn(sid, userid):
     dialogs: list[telethon.Dialog] = await client.get_dialogs()
     # send profile and unread count
     await utils.send_profile(dialogs, client, user.id)
+
+    print(" ==== profile_sent ====")
     # listen on message
     incoming_msg.listen_on(utils.client_list, user)
 
