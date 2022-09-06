@@ -1,5 +1,5 @@
 import string
-
+import json
 
 def make_response(tag, context, code=200) -> string:
     obj = {
@@ -8,5 +8,5 @@ def make_response(tag, context, code=200) -> string:
         'code': code
     }
 
-    response = str(obj).replace("\'", "\"")
-    return response
+    response = json.dumps(obj, ensure_ascii=False)
+    return response, code

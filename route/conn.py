@@ -1,5 +1,5 @@
 from quart import Blueprint, request  # , websocket
-from quart_cors import route_cors
+# from quart_cors import route_cors
 from telethon.sync import TelegramClient
 from user.channel.message import incoming_msg
 import response
@@ -18,59 +18,22 @@ async def disconnect():
     returns -> 200 : success / TODO : 404
     """
     userID: str = (request.args.get("user_id"))
-    user = utils.find_user(utils.client_list, userID)
+    user = await utils.find_user(utils.client_list, userID)
     if user != None:
         utils.remove_from_list(utils.client_list, userID)
         res = await utils.delete_folder(userID)
         if res != "":
-            return res
+            return response.make_response("System", res, 200)
         await user.disconnect()
-        return response.make_response("System", "log out successfully")
+        return response.make_response("System", "log out successfully", 200)
     else:
-        return response.make_response("System", "user not found")
-
-
-# @blueprint.websocket("/a")
-@utils.sio.event
-async def a(phone):  # listen on incoming connection
-    """
-    DEPRECATED ENDPOINT, ONLY FOR TESTING
-    USE /login AND /conn INSTEAD (RESTFUL FOR SIGN IN, AND SOCKET FOR PERSISTING)
-    """
-    client = TelegramClient(phone, utils.api_id, utils.api_hash)
-    await client.connect()
-    if await utils.has_session(client, phone):
-        user: telethon.client_describe_obj = await client.get_me()
-        # append into client list !!! todo -> might want to use token instead
-
-        # websocket.send(response.make_response("System", f"Login as {user.id}"))
-        await utils.sio.emit('a', response.make_response("System", f"Login as {user.id}"))
-        # create folder for further usage
-        res = await utils.make_folder(user.id)
-        if res != "":
-            await utils.sio.emit('a', res)  # websocket.send(res)
-
-        utils.client_list[user.id] = client
-
-        dialogs: list[telethon.Dialog] = await client.get_dialogs()
-        # load profile
-        # await utils.send_profile(dialogs, client, user.id)
-        # send unread message count
-        await utils.send_unread_count(dialogs)
-        # listen on message
-        incoming_msg.listen_on(utils.client_list, user)
-
-        await client.run_until_disconnected()
-
-    else:
-        # websocket.send(response.make_response("System", f"login aborted"))
-        await utils.sio.emit('a', response.make_response("System", f"login aborted"))
+        return response.make_response("System", "user not found", 404)
 
 
 @blueprint.post("/login")
-@route_cors(allow_headers=["content-type"],
-            allow_methods=["POST"],
-            allow_origin=["http://localhost:3000"])
+# @route_cors(allow_headers=["content-type"],
+#             allow_methods=["POST"],
+#             allow_origin=["http://localhost:3000"])
 async def login() -> str:  # return userID to frontend
     """
     establish connection
@@ -92,12 +55,12 @@ async def login() -> str:  # return userID to frontend
         res["last_name"] = me.last_name
         res["phone"] = me.phone
         res["profile_pic"] = profile_pic_data
-        json_data = json.dumps(res, ensure_ascii=False)
+        # json_data = json.dumps(res, ensure_ascii=False)
 
         # Change from Phone to User ID
         utils.client_list[me.id] = client
 
-        return json_data, 202
+        return response.make_response("System", res, 202)
     else:
         # This line should be added as client can only provide unique phone number
         utils.client_list[phone] = client
@@ -105,9 +68,9 @@ async def login() -> str:  # return userID to frontend
 
 
 @blueprint.post("/verify")
-@route_cors(allow_headers=["content-type"],
-            allow_methods=["POST"],
-            allow_origin=["http://localhost:3000"])
+# @route_cors(allow_headers=["content-type"],
+#             allow_methods=["POST"],
+#             allow_origin=["http://localhost:3000"])
 async def verify():
     """
     verify the user phone
@@ -133,57 +96,55 @@ async def verify():
     res["last_name"] = me.last_name
     res["phone"] = me.phone
     res["profile_pic"] = profile_pic_data
-    json_data = json.dumps(res, ensure_ascii=False)
+    # json_data = json.dumps(res, ensure_ascii=False)
 
     # Change from Phone to User ID
     utils.client_list[me.id] = utils.client_list[phone]
     del utils.client_list[phone]
 
-    return json_data, 200
+    return response.make_response("System", res, 200)
+
 
 # Check authorized yet or not
-
-
 @blueprint.post('/checkConnection')
-@route_cors(allow_headers=["content-type"],
-            allow_methods=["POST"],
-            allow_origin=["http://localhost:3000"])
+# @route_cors(allow_headers=["content-type"],
+#             allow_methods=["POST"],
+#             allow_origin=["http://localhost:3000"])
 async def checkConnection():
     data = await request.get_json()
     print(data)
     uid = data["uid"]
     print(uid)
-    client = utils.find_user(utils.client_list, uid)
+    client = await utils.find_user(utils.client_list, uid)
 
     if client != None:
         me = await client.get_me()
         profile_pic_data = await utils.get_profile_pic(client, me.id)
     else:
-        return "Unauthorized", 400
+        return response.make_response("System", "Unauthorized", 401)
 
     if(me != None):
-        response = {}
-        response["id"] = me.id
-        response["username"] = me.username
-        response["access_hash"] = me.access_hash
-        response["first_name"] = me.first_name
-        response["last_name"] = me.last_name
-        response["phone"] = me.phone
-        response["profile_pic"] = profile_pic_data
-        json_data = json.dumps(response, ensure_ascii=False)
-        return json_data, 200
+        res = {}
+        res["id"] = me.id
+        res["username"] = me.username
+        res["access_hash"] = me.access_hash
+        res["first_name"] = me.first_name
+        res["last_name"] = me.last_name
+        res["phone"] = me.phone
+        res["profile_pic"] = profile_pic_data
+        # json_data = json.dumps(result, ensure_ascii=False)
+        return response.make_response("System", res, 200)
     else:
-        return "Unauthorized", 400
+        return response.make_response("System", "Unauthorized", 401)
 
 
-# @blueprint.websocket("/conn")
 @utils.sio.event
 async def conn(sid, userid):
     """
     persist the user connection and send webhook messages received by telegram
     """
 
-    client = utils.find_user(utils.client_list, userid)
+    client = await utils.find_user(utils.client_list, userid)
     user: telethon.client_describe_obj = await client.get_me()
     print(userid, "persisting")
     res = await utils.make_folder(user.id)
@@ -200,27 +161,19 @@ async def conn(sid, userid):
     # listen on message
     incoming_msg.listen_on(utils.client_list, user)
 
+
 # Logout
-
-
 @blueprint.post('/logout')
-@route_cors(allow_headers=["content-type"],
-            allow_methods=["POST"],
-            allow_origin=["http://localhost:3000"])
+# @route_cors(allow_headers=["content-type"],
+#             allow_methods=["POST"],
+#             allow_origin=["http://localhost:3000"])
 async def logout():
     data = await request.get_json()
-    phone = data["phone"]
-    print(phone)
+    uid = data["uid"]
 
     try:
-        await utils.client_list[phone].log_out()
+        await utils.client_list[uid].log_out()
     except:
-        return "Logout failed", 401
+        return response.make_response("System", "Logout failed", 400)
 
-    return "Logout Success", 200
-
-
-@utils.sio.event
-async def ping(sid):
-    print("pinged")
-    await utils.pong()
+    return response.make_response("System", "Logout Success", 200)

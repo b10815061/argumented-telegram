@@ -6,13 +6,47 @@ import os
 import shutil
 import telethon
 import socketio
-from user.channel.message import util as message_utils
-
+from telethon.sync import TelegramClient
+import user.channel.message.util as message_utils
+from os import listdir
+from os.path import isfile, join
 
 api_id = 12655046
 api_hash = 'd84ab8008abfb3ec244630d2a6778fc6'
 client_list = dict()
 sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
+session_list = dict()
+
+# init server & set up variables
+
+
+def init():
+    load_session_file()
+
+# auto load .session into client_list
+
+
+def load_session_file():
+    global api_id
+    global api_hash
+    global client_list
+    global session_list
+    sessionpath = "./"
+    files = listdir(sessionpath)
+    for f in files:
+        fullpath = join(sessionpath, f)
+        if isfile(fullpath) and f.split('.')[-1] == 'session':
+            client = TelegramClient(f.split('.')[0], api_id, api_hash)
+            print(client)
+            client.connect()
+            if client.is_user_authorized():
+                print("session success: ", f)
+                me = client.get_me()
+                session_list[me.id] = f.split('.')[0]
+                #  client_list[me.id] = client
+            else:
+                print("session failed: ", f)
+            client.disconnect()
 
 
 # determine the given phone is valid and return True if client login successfully
@@ -40,7 +74,7 @@ async def make_folder(client_id) -> str:  # create user private folder
 async def delete_folder(client_id) -> str:  # delete user private folder
     path = f"./user/userid{client_id}"
     if not os.path.exists(path):
-        return response.make_response("system", "Error deleting folder", 500)
+        return "Error deleting folder"
     else:
         shutil.rmtree(path, ignore_errors=True)
         return ""
@@ -60,9 +94,15 @@ async def get_profile_pic(client, client_id) -> str:
 
 
 # find the telethon Client instance
-def find_user(client_list, userID) -> telethon.client:
+async def find_user(client_list, userID) -> telethon.client:
+    global session_list
     userID = int(userID)
     if userID in client_list:
+        return client_list[userID]
+    elif userID in session_list:
+        client = TelegramClient(session_list[userID], api_id, api_hash)
+        await client.connect()
+        client_list[userID] = client
         return client_list[userID]
     else:
         return None
@@ -141,18 +181,14 @@ async def send_profile(dialogs, client, client_id):
             obj = {
                 "tag": "profile",
                 "b64": b64,
-                "id": ID,
+                "channel": ID,
                 "name": d.name,
                 "last_message_tag": tag,
                 "last_message": context,
+                "last_message_timestamp": str(message.date),
                 "unread_count": d.unread_count
             }
 
             global sio
             # websocket.send(str(obj).replace("\'", "\""))
             await sio.emit('initial', obj)
-
-
-async def pong():
-    global sio
-    await sio.emit("pong", "pong")
