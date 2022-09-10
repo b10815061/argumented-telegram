@@ -41,7 +41,7 @@ async def setPrivacy(id):
 """
 job:    get privacy setting
 route:  GET "/setting/privacy/<id>"
-input:  type: privacy type index(params)
+input:  no input
 output: stringify setting situation, 200
 """
 @blueprint.get("/setting/privacy/<id>")
@@ -52,12 +52,11 @@ async def index(id) -> ResponseReturnValue:
     user = await utils.find_user(utils.client_list, int(id))
     if user == None:
         return response.make_response("System", "user not found / not login", 404)
-    typeChose = request.args.get("type")
-    if typeChose == None or int(typeChose) >= len(typeList) or int(typeChose) < 0:
-        return response.make_response("System", "type not found", 404)
-
-    result = await user(GetPrivacyRequest(typeList[int(typeChose)]))
-    return response.make_response("System", result.to_dict(), 200)
+    results = []
+    for requestType in typeList:
+        result = await user(GetPrivacyRequest(requestType))
+        results.append(result.to_dict())
+    return response.make_response("System", results, 200)
 
 """
 job:    update profile
