@@ -22,7 +22,7 @@ def listen_on(client_list, me):
         print("message incoming : \n")
         print(event.message)
         channel: telethon.Channel = await event.get_chat()
-        sender: str = await util.get_sender(event, channel)
+        sender: str = await util.get_sender(event.message, client_list[me.id], channel)
         time_stamp = event.message.date
         tag, context = await util.context_handler(me.id, client_list[me.id], event.message)
         message_id = event.message.id

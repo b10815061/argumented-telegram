@@ -6,18 +6,32 @@ import time
 from typing import Any, Tuple
 
 
-async def get_sender(event, channel) -> str:
+async def get_sender(msg_instance, user, channel_instance):
+    # get the sender of the msg
     try:
-        sender_instance: telethon.Peer = await event.get_sender()
-        if sender_instance.username != None:
-            sender = sender_instance.username
-        elif sender_instance.first_name != None:
-            lname = sender_instance.last_name if sender_instance.last_name != None else ""
-            sender = sender_instance.first_name + lname
+        # !!! messages in Chat (2 frineds channel) has no from_id attribute
+        if(msg_instance.from_id != None):
+            sender_instance = await user.get_entity(msg_instance.from_id.user_id)
         else:
+            # which menas if the from_id is NoneType, then the channel itself is a user
+            sender_instance = channel_instance
+        try:
+            if sender_instance.username != None:
+                sender = sender_instance.username
+            elif sender_instance.first_name != None:
+                lname = sender_instance.last_name if sender_instance.last_name != None else ""
+                sender = sender_instance.first_name + lname
+            else:
+                print("AN ERROR MIGHT OCCUR")
+                print(sender_instance, end="\n\n\n")
+                sender = "NAP"
+        except:
             sender = sender_instance.title
-    except:  # for those channels containing anonymous users
-        sender = channel.title
+    except Exception as e:
+        print(e)
+        print(channel_instance)
+        print(msg_instance)
+        return "ERROR"
     return sender
 
 

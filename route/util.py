@@ -8,6 +8,7 @@ import telethon
 import socketio
 from telethon.sync import TelegramClient
 import user.channel.message.util as message_utils
+import user.channel.priority as priority_utils
 from os import listdir
 from os.path import isfile, join
 
@@ -162,6 +163,8 @@ async def send_profile(dialogs, client, client_id):
 
         # this might not download successfully if user has no profile
         await client.download_profile_photo(d, file=path, download_big=False)
+
+        channel_pri = await priority_utils.retrive_prior(client_id, ID)
         try:
             # make thumbnail
             image = Image.open(path)
@@ -183,6 +186,7 @@ async def send_profile(dialogs, client, client_id):
                 "b64": b64,
                 "channel": ID,
                 "name": d.name,
+                "priority": channel_pri,
                 "last_message_tag": tag,
                 "last_message": context,
                 "last_message_timestamp": str(message.date),

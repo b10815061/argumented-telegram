@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, PrimaryKeyConstraint
 
-from dbconfig import Base
+from DB.config import Base
 
 
 class channels(Base):

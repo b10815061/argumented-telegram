@@ -20,7 +20,8 @@ async def retrive_prior(client_id, input_channel):
             .filter(channels.user_id == str(client_id))\
             .filter(channels.channel_id == str(input_channel))\
             .first()
-        return (channel.priority)
+        print(client_id, input_channel, channel)
+        return (channel.priority if channel != None else -1)
 
 # return 10 tuples for a given user
 

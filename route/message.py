@@ -66,8 +66,18 @@ async def send():
         if user.is_connected():
             try:
                 name = await user.get_entity(int(channel_id))
-                await user.send_message(entity=name, message=message)
-                return response.make_response("System", f'{channel_id} : {message}', 200)
+                message_instance = await user.send_message(entity=name, message=message)
+                channel_instance: telethon.Channel = await user.get_entity((int(channel_id)))
+                sender = await message_utils.get_sender(message_instance, user, channel_instance)
+                obj = {
+                    "tag": "message",
+                    "channel": channel_id,
+                    "from": sender,
+                    "data": message,
+                    "message_id": message_instance.id,  # save the message id for advanced functions
+                    "timestamp": str(message_instance.date)
+                }
+                return response.make_response("message", obj, 200)
             except Exception as e:
                 print(e)
                 return response.make_response("System", f'you can\'t write in this channel ({channel_id})', 401)
@@ -145,29 +155,7 @@ async def getMessage():
 
                 msg_instance: telethon.message
                 for msg_instance in msgs:
-                    # get the sender of the msg
-                    try:
-                        # !!! messages in Chat (2 frineds channel) has no from_id attribute
-                        if(msg_instance.from_id != None):
-                            sender_instance = await user.get_entity(msg_instance.from_id.user_id)
-                        else:
-                            # which menas if the from_id is NoneType, then the channel itself is a user
-                            sender_instance = channel_instance
-                        try:
-                            if sender_instance.username != None:
-                                sender = sender_instance.username
-                            elif sender_instance.first_name != None:
-                                lname = sender_instance.last_name if sender_instance.last_name != None else ""
-                                sender = sender_instance.first_name + lname
-                            else:
-                                print("AN ERROR MIGHT OCCUR")
-                                print(sender_instance, end="\n\n\n")
-                        except:
-                            sender = sender_instance.title
-                    except Exception as e:
-                        print(e)
-                        print(channel_instance)
-                        print(msgs[0])
+                    sender = await message_utils.get_sender(msg_instance, user, channel_instance)
                     # get the message content
                     try:
                         tag, msg_content = await message_utils.context_handler(
