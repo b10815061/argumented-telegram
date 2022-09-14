@@ -1,9 +1,10 @@
 import re
 from quart import Blueprint, Request, ResponseReturnValue, request
-from telethon import TelegramClient
-from telethon.tl.functions.account import GetGlobalPrivacySettingsRequest, SetPrivacyRequest, GetPrivacyRequest, UpdateProfileRequest, UpdateUsernameRequest
+from telethon import TelegramClient, types
+from telethon.tl.functions.account import GetGlobalPrivacySettingsRequest, SetPrivacyRequest, GetPrivacyRequest, UpdateProfileRequest, UpdateUsernameRequest, ChangePhoneRequest, SendChangePhoneCodeRequest
 from telethon.tl.types import InputPrivacyKeyStatusTimestamp, InputPrivacyKeyChatInvite, InputPrivacyKeyPhoneCall, InputPrivacyKeyPhoneP2P, InputPrivacyKeyForwards, InputPrivacyKeyProfilePhoto, InputPrivacyKeyPhoneNumber, InputPrivacyKeyAddedByPhone, InputPrivacyValueDisallowAll, InputPrivacyValueAllowAll
 from telethon.tl.functions.photos import UploadProfilePhotoRequest
+from telethon.errors.rpcerrorlist import PhoneNumberOccupiedError, PhoneNumberInvalidError
 import route.util as utils
 import telethon
 import base64
@@ -112,3 +113,63 @@ async def updatePhoto(id):
     file = base64.b64decode(s=data["photo"])
     await user(UploadProfilePhotoRequest(await user.upload_file(file)))
     return response.make_response("System", "OK", 200)
+
+"""
+job:    send update phone code request
+route:  POST "/setting/phone/code/<id>"
+input:  phone: new phone number (json)
+output: phone_code_hash & other related result, 200
+"""
+# TODO: may need to save phone_code_hash
+@blueprint.post("/setting/phone/code/<id>")
+async def sendUpdatePhoneCodeRequest(id):
+    data = await request.get_json()
+    user: TelegramClient = await utils.find_user(utils.client_list, int(id))
+    if not("phone" in data):
+        return response.make_response("System", "no new phone", 400)
+    try:
+        result: types.auth.SentCode = user(SendChangePhoneCodeRequest(
+            phone_number=data["phone"],
+            settings=types.CodeSettings(
+                allow_flashcall=True,
+                current_number=True,
+                allow_app_hash=True
+            )
+        ))
+        return response.make_response("System", result.to_dict(), 200)
+    except PhoneNumberOccupiedError:
+        return response.make_response("System", "The phone number is already in use", 400)
+    except PhoneNumberInvalidError:
+        return response.make_response("System", "The phone number is invalid", 400)
+    except:
+        return response.make_response("System", "Internal Server Error", 500)
+
+"""
+job:    varify phone change request
+route:  POST "/setting/phone/varify/<id>"
+input:  phone: new phone number (json)
+output: phone_code_hash & other related result, 200
+"""
+@blueprint.post("/setting/phone/varify/<id>")
+async def varifyPhoneChnageRequest(id):
+    data = await request.get_json()
+    user: TelegramClient = await utils.find_user(utils.client_list, int(id))
+    if not("phone" in data):
+        return response.make_response("System", "no phone number", 400)
+    if not("code_hash" in data):
+        return response.make_response("System", "no code hash", 200)
+    if not("code" in data):
+        return response.make_response("System", "no phone code", 200)
+    try:
+        result = user(ChangePhoneRequest(
+            phone_number = data["phone"],
+            phone_code_hash = data["code_hash"],
+            phone_code = data["code"]
+        ))
+        return response.make_response("System", "OK", 200)
+    except PhoneNumberOccupiedError:
+        return response.make_response("System", "The phone number is already in use", 400)
+    except PhoneNumberInvalidError:
+        return response.make_response("System", "The phone number is invalid", 400)
+    except:
+        return response.make_response("System", "Internal Server Error", 500)
