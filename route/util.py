@@ -160,7 +160,7 @@ async def send_profile(dialogs, client, client_id):
         message = message_list[0]
         tag, context = await message_utils.context_handler(
             client_id, client, message)
-
+        sender = await message_utils.get_sender(message, client, d)
         # this might not download successfully if user has no profile
         await client.download_profile_photo(d, file=path, download_big=False)
 
@@ -187,9 +187,14 @@ async def send_profile(dialogs, client, client_id):
                 "channel": ID,
                 "name": d.name,
                 "priority": channel_pri,
-                "last_message_tag": tag,
-                "last_message": context,
-                "last_message_timestamp": str(message.date),
+                "last_message": {
+                    "tag": tag,
+                    "channel": ID,
+                    "from": sender,
+                    "data": context,
+                    "message_id": message.id,
+                    "time_stamp": str(message.date)
+                },
                 "unread_count": d.unread_count
             }
 
