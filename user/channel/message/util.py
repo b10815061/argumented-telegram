@@ -12,9 +12,11 @@ async def get_sender(msg_instance, user, channel_instance):
         # !!! messages in Chat (2 frineds channel) has no from_id attribute
         if(msg_instance.from_id != None):
             sender_instance = await user.get_entity(msg_instance.from_id.user_id)
+            user_id = msg_instance.from_id.user_id
         else:
             # which menas if the from_id is NoneType, then the channel itself is a user
             sender_instance = channel_instance
+            user_id = None
         try:
             if sender_instance.username != None:
                 sender = sender_instance.username
@@ -24,7 +26,7 @@ async def get_sender(msg_instance, user, channel_instance):
             else:
                 print("AN ERROR MIGHT OCCUR")
                 print(sender_instance, end="\n\n\n")
-                sender = "NAP"
+                sender = "Deleted account"
         except:
             sender = sender_instance.title
     except Exception as e:
@@ -32,7 +34,7 @@ async def get_sender(msg_instance, user, channel_instance):
         print(channel_instance)
         print(msg_instance)
         return "ERROR"
-    return sender
+    return user_id, sender
 
 
 async def get_sticker_code(cur: int, Stickerpath: str, client_id) -> str:  # !!!!too slow

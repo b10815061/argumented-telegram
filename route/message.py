@@ -68,10 +68,13 @@ async def send():
                 name = await user.get_entity(int(channel_id))
                 message_instance = await user.send_message(entity=name, message=message)
                 channel_instance: telethon.Channel = await user.get_entity((int(channel_id)))
-                sender = await message_utils.get_sender(message_instance, user, channel_instance)
+                sender_id, sender = await message_utils.get_sender(message_instance, user, channel_instance)
+                if(sender_id is None):
+                    sender_id = channel_id
                 obj = {
                     "tag": "message",
                     "channel": channel_id,
+                    "sender_id": sender_id,
                     "from": sender,
                     "data": message,
                     "message_id": message_instance.id,  # save the message id for advanced functions
@@ -155,7 +158,7 @@ async def getMessage():
 
                 msg_instance: telethon.message
                 for msg_instance in msgs:
-                    sender = await message_utils.get_sender(msg_instance, user, channel_instance)
+                    sender_id, sender = await message_utils.get_sender(msg_instance, user, channel_instance)
                     # get the message content
                     try:
                         tag, msg_content = await message_utils.context_handler(
@@ -167,11 +170,14 @@ async def getMessage():
 
                     # get the time when the message has been sent
                     msg_time = msg_instance.date
+                    if(sender_id is None):
+                        sender_id = channel_id
 
                     obj = {
                         "tag": tag,
                         "channel": channel_id,
                         "from": sender,
+                        "sender_id": sender_id,
                         "data": msg_content,
                         "message_id": msg_instance.id,  # save the message id for advanced functions
                         "timestamp": str(msg_time)
