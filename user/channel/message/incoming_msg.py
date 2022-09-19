@@ -25,7 +25,7 @@ def listen_on(client_list, me):
         sender_id, sender = await message_utils.get_sender(event.message, client_list[me.id], channel)
         if(sender_id is None):
             sender_id = channel.id
-        time_stamp = event.message.date
+        timestamp = event.message.date
         tag, context = await message_utils.context_handler(me.id, client_list[me.id], event.message)
         message_id = event.message.id
         obj = {
@@ -35,7 +35,7 @@ def listen_on(client_list, me):
             "from": sender,
             "data": context,
             "message_id": message_id,
-            "time_stamp": str(time_stamp)
+            "timestamp": str(timestamp)
         }
         # obj = str(obj)
         # obj = obj.replace("\\\'", "\'")

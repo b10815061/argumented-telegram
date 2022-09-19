@@ -197,7 +197,7 @@ async def send_profile(dialogs, client, client_id):
                     "from": sender,
                     "data": context,
                     "message_id": message.id,
-                    "time_stamp": str(message.date)
+                    "timestamp": str(message.date)
                 },
                 "unread_count": d.unread_count
             }
