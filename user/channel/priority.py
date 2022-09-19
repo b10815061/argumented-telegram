@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from DB.config import engine
-from DB.model import channels
+from DB import model
 
 
 async def insert_user_channel(client_id, input_channel, input_pri):
