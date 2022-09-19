@@ -1,3 +1,4 @@
+import base64
 from quart import Blueprint, render_template, request, websocket
 # from quart_cors import route_cors
 from telethon.sync import TelegramClient
@@ -20,23 +21,40 @@ blueprint = Blueprint("message", __name__)
 async def sendFile():
     try:
         data: quart.datastruture.FieldStorage = await request.files
-        print(data)
         file = data["file"]
         print(file)
         user_id = int(request.args.get("user_id"))
         channel_id = int(request.args.get("channel_id"))
+
         print(user_id, channel_id)
         user = await utils.find_user(utils.client_list, user_id)
+        channel_instance: telethon.Channel = await user.get_entity((int(channel_id)))
         if user != None:
             if user.is_connected():
                 des = os.path.join(os.getcwd(), "user",
                                    f"userid{user_id}", file.filename)
 
                 await file.save(destination=des)
-                await user.send_file(channel_id, des)
+                with open(des, "rb") as file:
+                    file_data = file.read()
+                    data = base64.b64encode(file_data).decode()
+                file_instance = await user.send_file(channel_id, des)
 
                 os.remove(des)
-                return response.make_response("System", f"{file.filename} sent", 200)
+
+                _, sender = await message_utils.get_sender(file_instance, user, channel_instance)
+
+                obj = {
+                    "tag": "image",
+                    "channel": channel_id,
+                    "sender_id": user_id,
+                    "from": sender,
+                    "data": data,
+                    "message_id": file_instance.id,  # save the message id for advanced functions
+                    "timestamp": str(file_instance.date)
+                }
+
+                return response.make_response("image", obj, 200)
             else:
                 return response.make_response("System", "You are not Connected!", 400)
         else:
@@ -167,6 +185,7 @@ async def getMessage():
                         print(e)
                         print(msg_instance)
                         print(msg_content)
+                        raise Exception(e)
 
                     # get the time when the message has been sent
                     msg_time = msg_instance.date

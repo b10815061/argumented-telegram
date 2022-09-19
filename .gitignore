@@ -2,5 +2,8 @@
 **/userid*/
 **/*.jpg
 **/__pycache__/
+/build/*
+/dist/*
 *.session-journal
 .env
+main.spec

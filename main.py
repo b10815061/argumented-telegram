@@ -1,18 +1,17 @@
+from route.channel import blueprint as channel_blueprint
+from route.message import blueprint as message_blueprint
+from route.setting import blueprint as setting_blueprint
+from route.conn import blueprint as conn_blueprint
+from route.base import blueprint as base_blueprint
+from quart_cors import cors
+from quart import Quart
+import os
+import socketio
+import uvicorn
+import route.util as utils
 from dotenv import load_dotenv
 
 load_dotenv()  # take environment variables from .env.
-
-import route.util as utils
-import uvicorn
-import socketio
-import os
-from quart import Quart
-from quart_cors import cors
-from route.base import blueprint as base_blueprint
-from route.conn import blueprint as conn_blueprint
-from route.setting import blueprint as setting_blueprint
-from route.message import blueprint as message_blueprint
-from route.channel import blueprint as channel_blueprint
 
 
 app = Quart(__name__)
@@ -32,4 +31,4 @@ sio_app = socketio.ASGIApp(utils.sio, app, socketio_path="socket.io")
 
 if __name__ == "__main__":
     utils.init()
-    uvicorn.run(sio_app, port=5000)
+    uvicorn.run(sio_app, port=5000, host="0.0.0.0")

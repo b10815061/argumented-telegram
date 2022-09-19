@@ -1,7 +1,7 @@
 from sqlite3 import Timestamp
 from urllib import response
 import telethon
-from . import util
+from . import util as message_utils
 from telethon.sync import events
 # from quart import websocket
 import route.util as utils
@@ -22,11 +22,11 @@ def listen_on(client_list, me):
         print("message incoming : \n")
         print(event.message)
         channel: telethon.Channel = await event.get_chat()
-        sender_id, sender = await util.get_sender(event.message, client_list[me.id], channel)
+        sender_id, sender = await message_utils.get_sender(event.message, client_list[me.id], channel)
         if(sender_id is None):
             sender_id = channel.id
         time_stamp = event.message.date
-        tag, context = await util.context_handler(me.id, client_list[me.id], event.message)
+        tag, context = await message_utils.context_handler(me.id, client_list[me.id], event.message)
         message_id = event.message.id
         obj = {
             "tag": tag,
