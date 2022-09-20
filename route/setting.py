@@ -15,29 +15,7 @@ blueprint = Blueprint("setting", __name__)
 # for privacy setting type, check the link below:
 # https://github.com/LonamiWebs/Telethon/wiki/Privacy-settings
 typeList = [InputPrivacyKeyStatusTimestamp(), InputPrivacyKeyChatInvite(), InputPrivacyKeyPhoneCall(), InputPrivacyKeyPhoneP2P(), InputPrivacyKeyForwards(), InputPrivacyKeyProfilePhoto(), InputPrivacyKeyPhoneNumber(), InputPrivacyKeyAddedByPhone()]
-
-"""
-job:    update privacy setting
-route:  POST "/setting/privacy/<id>"
-input:  type: privacy type index, value: setting index(0: disallow all, 1: allow all) (json)
-output: stringify setting situation, 200
-"""
-@blueprint.post("/setting/privacy/<id>")
-async def setPrivacy(id):
-    data = await request.get_json()
-    ruleList = [InputPrivacyValueDisallowAll(), InputPrivacyValueAllowAll()]
-
-    if not("type" in data) or int(data["type"]) >= len(typeList) or int(data["type"]) < 0:
-        return response.make_response("System", "type not found", 404)
-    if not("value" in data) or int(data["value"]) >= len(ruleList) or int(data["value"]) < 0:
-        return response.make_response("System", "rule not found", 404)
-
-    values = [ruleList[int(data["value"])]]
-    user = await utils.find_user(utils.client_list, int(id))
-    if user == None:
-        return response.make_response("System", "user not found / not login", 404)
-    await user(SetPrivacyRequest(typeList[int(data["type"])], values))
-    return response.make_response("System", "OK", 200)
+typenameList = ["StatusTimestamp", "ChatInvite", "PhoneCall", "PhoneP2P", "Forwards", "ProfilePhoto", "PhoneNumber", "AddedByPhone"]
 
 """
 job:    get privacy setting
@@ -58,6 +36,30 @@ async def index(id) -> ResponseReturnValue:
         result = await user(GetPrivacyRequest(requestType))
         results.append(result.to_dict())
     return response.make_response("System", results, 200)
+
+"""
+job:    update privacy setting
+route:  POST "/setting/privacy/<id>"
+input:  type: privacy type index, value: setting index(0: disallow all, 1: allow all) (json)
+output: stringify setting situation, 200
+"""
+@blueprint.post("/setting/privacy/<id>")
+async def setPrivacy(id):
+    data = await request.get_json()
+    ruleList = [InputPrivacyValueDisallowAll(), InputPrivacyValueAllowAll()]
+
+    user = await utils.find_user(utils.client_list, int(id))
+    if user == None:
+        return response.make_response("System", "user not found / not login", 404)
+
+    for idx, typeName in enumerate(typenameList):
+        if (typeName in data):
+            if int(data[typeName]) >= len(ruleList) or int(data[typeName]) < 0:
+                return response.make_response("System", "wrong rule", 400)
+            values = [ruleList[int(data[typeName])]]
+            await user(SetPrivacyRequest(typeList[idx], values))
+
+    return response.make_response("System", "OK", 200)
 
 """
 job:    update profile
