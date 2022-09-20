@@ -39,6 +39,7 @@ async def mute():
     else:
         return response.make_response("System", "user not found")
 
+# DEPRECATED
 @blueprint.get("/channel/list/<uid>")
 async def channel_list(uid):
     user: TelegramClient = await utils.find_user(utils.client_list, int(uid))
