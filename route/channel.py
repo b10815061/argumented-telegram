@@ -7,6 +7,7 @@ import telethon
 import json
 from telethon import functions, types
 import datetime
+from DB.crud import priority
 
 blueprint = Blueprint("channel", __name__)
 
@@ -44,13 +45,26 @@ async def channel_list(uid):
     if user == None:
         return response.make_response("System", "user not found / not login", 404)
     
+    priority_list = priority.get_channel_prioritys_by_user(uid)
+    
     channelList = []
     async for d in user.iter_dialogs():
-        channelId = d.entity.id
-        channelName = d.name
-        channelList.append([channelId, channelName])
-        print(f"channel id: {channelId}, channel name: {channelName}")
+        channel_pri = -1
+        for prioritity in priority_list:
+            if (int(prioritity.channel_id) == int(d.entity.id)):
+                channel_pri = prioritity.priority
+                break
+        channel_dto = channelDTO(d.entity.id, d.name, channel_pri)
+        channelList.append(channel_dto.__dict__)
+        # print(f"channel id: {channel_dto.id}, channel name: {channel_dto.name}")
         # channelData = await user.get_entity(d.entity.id)
         # print(d)
 
     return response.make_response("System", channelList, 200)
+
+
+class channelDTO:
+    def __init__(self, channel_id, channel_name, priority):
+        self.id = channel_id
+        self.name = channel_name
+        self.priority = priority

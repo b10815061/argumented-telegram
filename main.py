@@ -3,6 +3,7 @@ from route.message import blueprint as message_blueprint
 from route.setting import blueprint as setting_blueprint
 from route.conn import blueprint as conn_blueprint
 from route.base import blueprint as base_blueprint
+from route.priority import blueprint as priority_blueprint
 from quart_cors import cors
 from quart import Quart
 import os
@@ -25,6 +26,7 @@ app.register_blueprint(conn_blueprint)
 app.register_blueprint(message_blueprint)
 app.register_blueprint(setting_blueprint)
 app.register_blueprint(channel_blueprint)
+app.register_blueprint(priority_blueprint)
 
 
 sio_app = socketio.ASGIApp(utils.sio, app, socketio_path="socket.io")
