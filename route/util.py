@@ -168,7 +168,10 @@ async def send_profile(dialogs, client, client_id):
         # this might not download successfully if user has no profile
         await client.download_profile_photo(d, file=path, download_big=False)
 
-        channel_pri = priority_utils.get_channel_priority(client_id, ID).priority
+        channel_get = priority_utils.get_channel_priority(client_id, ID)
+        channel_pri = -1
+        if (channel_get != None):
+            channel_pri = channel_get.priority
         try:
             # make thumbnail
             image = Image.open(path)
