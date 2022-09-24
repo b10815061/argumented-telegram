@@ -4,7 +4,7 @@ from telethon import TelegramClient, types
 from telethon.tl.functions.account import GetGlobalPrivacySettingsRequest, SetPrivacyRequest, GetPrivacyRequest, UpdateProfileRequest, UpdateUsernameRequest, ChangePhoneRequest, SendChangePhoneCodeRequest
 from telethon.tl.types import InputPrivacyKeyStatusTimestamp, InputPrivacyKeyChatInvite, InputPrivacyKeyPhoneCall, InputPrivacyKeyPhoneP2P, InputPrivacyKeyForwards, InputPrivacyKeyProfilePhoto, InputPrivacyKeyPhoneNumber, InputPrivacyKeyAddedByPhone, InputPrivacyValueDisallowAll, InputPrivacyValueAllowAll
 from telethon.tl.functions.photos import UploadProfilePhotoRequest
-from telethon.errors.rpcerrorlist import PhoneNumberOccupiedError, PhoneNumberInvalidError
+from telethon.errors.rpcerrorlist import PhoneNumberOccupiedError, PhoneNumberInvalidError, PrivacyKeyInvalidError
 import route.util as utils
 import telethon
 import base64
@@ -54,7 +54,10 @@ async def setPrivacy(id):
             if int(data[typeName]) >= len(ruleList) or int(data[typeName]) < 0:
                 return response.make_response("System", "wrong rule", 400)
             values = [ruleList[int(data[typeName])]]
-            await user(SetPrivacyRequest(typeList[idx], values))
+            try:
+                await user(SetPrivacyRequest(typeList[idx], values))
+            except PrivacyKeyInvalidError:
+                return response.make_response("System", "Invalid type used", 400)
 
     return response.make_response("System", "OK", 200)
 
