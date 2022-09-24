@@ -207,7 +207,7 @@ async def getMessage():
             except Exception as e:
                 print(e)
                 err_msg = {
-                    "class_name": e.__class__.__name__,
+                    "className": e.__class__.__name__,
                     "message": e.__str__()
                 }
                 message = response.make_response("Error", err_msg, 500)
