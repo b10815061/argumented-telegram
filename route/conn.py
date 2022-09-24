@@ -112,9 +112,7 @@ async def verify():
 #             allow_origin=["http://localhost:3000"])
 async def checkConnection():
     data = await request.get_json()
-    print(data)
     uid = data["uid"]
-    print(uid)
     client = await utils.find_user(utils.client_list, uid)
 
     if client != None:

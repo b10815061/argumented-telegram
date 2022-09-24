@@ -3,8 +3,14 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table, Column, Integer, String, MetaData, String
 
-# SQLALCHEMY_DATABASE_URL = "postgresql://tommy:0000@localhost:5432/telegram"
-SQLALCHEMY_DATABASE_URL = "postgresql://tommy:astrongpassword@db:5432/telegram"
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+
+SQLALCHEMY_DATABASE_URL = "postgresql://tommy:astrongpassword@db:5432/telegram" if os.getenv[
+    "FROM"] == "DOCKER" else "postgresql://tommy:0000@localhost:5432/telegram"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=False)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

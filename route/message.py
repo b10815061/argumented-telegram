@@ -206,7 +206,11 @@ async def getMessage():
                 message = response.make_response("message", context, 200)
             except Exception as e:
                 print(e)
-                message = response.make_response("Error", e, 500)
+                err_msg = {
+                    "className": e.__class__.__name__,
+                    "message": e.__str__()
+                }
+                message = response.make_response("Error", err_msg, 500)
                 print("channel_not_found")
         else:
             message = response.make_response(

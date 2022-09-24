@@ -4,7 +4,7 @@ from telethon import TelegramClient, types
 from telethon.tl.functions.account import GetGlobalPrivacySettingsRequest, SetPrivacyRequest, GetPrivacyRequest, UpdateProfileRequest, UpdateUsernameRequest, ChangePhoneRequest, SendChangePhoneCodeRequest
 from telethon.tl.types import InputPrivacyKeyStatusTimestamp, InputPrivacyKeyChatInvite, InputPrivacyKeyPhoneCall, InputPrivacyKeyPhoneP2P, InputPrivacyKeyForwards, InputPrivacyKeyProfilePhoto, InputPrivacyKeyPhoneNumber, InputPrivacyKeyAddedByPhone, InputPrivacyValueDisallowAll, InputPrivacyValueAllowAll
 from telethon.tl.functions.photos import UploadProfilePhotoRequest
-from telethon.errors.rpcerrorlist import PhoneNumberOccupiedError, PhoneNumberInvalidError
+from telethon.errors.rpcerrorlist import PhoneNumberOccupiedError, PhoneNumberInvalidError, PrivacyKeyInvalidError
 import route.util as utils
 import telethon
 import base64
@@ -25,9 +25,6 @@ output: stringify setting situation, 200
 """
 @blueprint.get("/setting/privacy/<id>")
 async def index(id) -> ResponseReturnValue:
-    print(utils.client_list)
-    print(utils.session_list)
-    print(id)
     user = await utils.find_user(utils.client_list, int(id))
     if user == None:
         return response.make_response("System", "user not found / not login", 404)
@@ -57,7 +54,10 @@ async def setPrivacy(id):
             if int(data[typeName]) >= len(ruleList) or int(data[typeName]) < 0:
                 return response.make_response("System", "wrong rule", 400)
             values = [ruleList[int(data[typeName])]]
-            await user(SetPrivacyRequest(typeList[idx], values))
+            try:
+                await user(SetPrivacyRequest(typeList[idx], values))
+            except PrivacyKeyInvalidError:
+                return response.make_response("System", "Invalid type used", 400)
 
     return response.make_response("System", "OK", 200)
 
@@ -152,8 +152,8 @@ route:  POST "/setting/phone/varify/<id>"
 input:  phone: new phone number (json)
 output: phone_code_hash & other related result, 200
 """
-@blueprint.post("/setting/phone/varify/<id>")
-async def varifyPhoneChnageRequest(id):
+@blueprint.post("/setting/phone/verify/<id>")
+async def verifyPhoneChangeRequest(id):
     data = await request.get_json()
     user: TelegramClient = await utils.find_user(utils.client_list, int(id))
     if not("phone" in data):
