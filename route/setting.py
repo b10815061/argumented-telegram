@@ -25,9 +25,6 @@ output: stringify setting situation, 200
 """
 @blueprint.get("/setting/privacy/<id>")
 async def index(id) -> ResponseReturnValue:
-    print(utils.client_list)
-    print(utils.session_list)
-    print(id)
     user = await utils.find_user(utils.client_list, int(id))
     if user == None:
         return response.make_response("System", "user not found / not login", 404)
@@ -152,8 +149,8 @@ route:  POST "/setting/phone/varify/<id>"
 input:  phone: new phone number (json)
 output: phone_code_hash & other related result, 200
 """
-@blueprint.post("/setting/phone/varify/<id>")
-async def varifyPhoneChnageRequest(id):
+@blueprint.post("/setting/phone/verify/<id>")
+async def verifyPhoneChangeRequest(id):
     data = await request.get_json()
     user: TelegramClient = await utils.find_user(utils.client_list, int(id))
     if not("phone" in data):
