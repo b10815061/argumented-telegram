@@ -55,7 +55,7 @@ async def channel_list(uid):
             if (int(prioritity.channel_id) == int(d.entity.id)):
                 channel_pri = prioritity.priority
                 break
-        channel_dto = channelDTO(d.entity.id, d.name, channel_pri)
+        channel_dto = ChannelDTO(d.entity.id, d.name, channel_pri)
         channelList.append(channel_dto.__dict__)
         # print(f"channel id: {channel_dto.id}, channel name: {channel_dto.name}")
         # channelData = await user.get_entity(d.entity.id)
@@ -64,7 +64,7 @@ async def channel_list(uid):
     return response.make_response("System", channelList, 200)
 
 
-class channelDTO:
+class ChannelDTO:
     def __init__(self, channel_id, channel_name, priority):
         self.id = channel_id
         self.name = channel_name

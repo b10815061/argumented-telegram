@@ -4,6 +4,7 @@ from route.setting import blueprint as setting_blueprint
 from route.conn import blueprint as conn_blueprint
 from route.base import blueprint as base_blueprint
 from route.priority import blueprint as priority_blueprint
+from route.important_msg import blueprint as important_msg_blueprint
 from quart_cors import cors
 from quart import Quart
 import os
@@ -28,6 +29,8 @@ app.register_blueprint(message_blueprint)
 app.register_blueprint(setting_blueprint)
 app.register_blueprint(channel_blueprint)
 app.register_blueprint(priority_blueprint)
+app.register_blueprint(important_msg_blueprint)
+
 
 @app.errorhandler(Exception)
 def internelServerErrorHandler(e: Exception):
@@ -36,6 +39,7 @@ def internelServerErrorHandler(e: Exception):
         "message": e.__str__()
     }
     return response.make_response("System", err_msg, 500)
+
 
 sio_app = socketio.ASGIApp(utils.sio, app, socketio_path="socket.io")
 
