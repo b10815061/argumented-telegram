@@ -45,7 +45,7 @@ async def mute():
 job:    get update phone code request
 route:  GET "/channel/list/<uid>"
 input:  none
-output: channel_list: each object contains id, name, priority, b64
+output: channel_list: each object contains id, name, priority, b64, unread_count
 note:   it may be slow because of lots of image request
 """
 
@@ -87,9 +87,9 @@ async def channel_list(uid):
 
 
 class ChannelDTO:
-    def __init__(self, channel_id, channel_name, priority, b64, unread_msg):
+    def __init__(self, channel_id, channel_name, priority, b64, unread_count):
         self.id = channel_id
         self.name = channel_name
         self.priority = priority
         self.b64 = b64
-        self.unread_message = unread_msg
+        self.unread_count = unread_count
