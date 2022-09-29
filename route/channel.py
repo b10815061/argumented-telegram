@@ -77,7 +77,7 @@ async def channel_list(uid):
             b64 = base64.b64encode(byte_thumb)
             b64 = b64.decode()
 
-        channel_dto = ChannelDTO(d.entity.id, d.name, channel_pri, b64)
+        channel_dto = ChannelDTO(d.entity.id, d.name, channel_pri, b64, d.unread_count)
         channelList.append(channel_dto.__dict__)
         # print(f"channel id: {channel_dto.id}, channel name: {channel_dto.name}")
         # channelData = await user.get_entity(d.entity.id)
@@ -87,8 +87,9 @@ async def channel_list(uid):
 
 
 class ChannelDTO:
-    def __init__(self, channel_id, channel_name, priority, b64):
+    def __init__(self, channel_id, channel_name, priority, b64, unread_msg):
         self.id = channel_id
         self.name = channel_name
         self.priority = priority
         self.b64 = b64
+        self.unread_message = unread_msg
