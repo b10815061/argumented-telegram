@@ -69,10 +69,10 @@ async def channel_list(uid):
         profile_result = await user.download_profile_photo(d, file=bytes)
         b64 = ""
         if profile_result != None:
-            tmp_image = Image.open(io.BytesIO(profile_result))
-            tmp_image.thumbnail([64, 64], Image.ANTIALIAS)
-            buf = io.BytesIO()
-            tmp_image.save(buf, format="png")
+            # tmp_image = Image.open(io.BytesIO(profile_result))
+            # tmp_image.thumbnail([64, 64], Image.ANTIALIAS)
+            buf = io.BytesIO(profile_result)
+            # tmp_image.save(buf, format="png")
             byte_thumb = buf.getvalue()
             b64 = base64.b64encode(byte_thumb)
             b64 = b64.decode()
