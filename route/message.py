@@ -85,15 +85,11 @@ async def send():
             try:
                 name = await user.get_entity(int(channel_id))
                 message_instance = await user.send_message(entity=name, message=message)
-                channel_instance: telethon.Channel = await user.get_entity((int(channel_id)))
-                _, sender = await message_utils.get_sender(message_instance, user, channel_instance)
-                if(sender_id is None):
-                    sender_id = channel_id
                 obj = {
                     "tag": "message",
                     "channel": channel_id,
                     "sender_id": user_id,
-                    "from": sender,
+                    "from": "me",
                     "data": message,
                     "message_id": message_instance.id,  # save the message id for advanced functions
                     "timestamp": str(message_instance.date)

@@ -10,12 +10,16 @@ import os
 import socketio
 import uvicorn
 import route.util as utils
+import sys
 from dotenv import load_dotenv
 import response
 
 load_dotenv()  # take environment variables from .env.
 
-host = "0.0.0.0" if os.getenv["FROM"] == "DOCKER" else "127.0.0.1"
+
+if os.getenv("FROM") is None:
+    sys.exit("FATAL : local enviroment variable FROM not set.")
+host = "0.0.0.0" if os.getenv("FROM") == "DOCKER" else "127.0.0.1"
 
 app = Quart(__name__)
 app = cors(app_or_blueprint=app,

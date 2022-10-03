@@ -8,7 +8,6 @@ from typing import Any, Tuple
 
 async def get_sender(msg_instance, user, channel_instance):
     # get the sender of the msg
-    print(msg_instance)
     try:
         # !!! messages in Chat (2 frineds channel) has no from_id attribute
         if(msg_instance.from_id != None):
