@@ -4,6 +4,11 @@ from DB.model import channel_priority
 
 # in priority, we mainly use CREATE and GET, since we auto-detect if it's CREATE or UPDATE
 
+# user_id = Column(String)
+# channel_id = Column(String)
+# priority = Column(Integer)
+
+
 # CREATE
 
 
@@ -24,7 +29,6 @@ def create_channel_priority(client_id: str, channel_id: str, priority: str) -> c
 
 
 def get_channel_priority(client_id: str, channel_id: str) -> channel_priority:
-    # find if it exists
     with Session(engine) as session:
         channel = session.query(channel_priority) \
             .filter(channel_priority.user_id == str(client_id)) \
@@ -34,7 +38,6 @@ def get_channel_priority(client_id: str, channel_id: str) -> channel_priority:
 
 
 def get_channel_prioritys_by_user(client_id: str) -> list[channel_priority]:
-    # find if it exists
     with Session(engine) as session:
         channel_list = session.query(channel_priority) \
             .filter(channel_priority.user_id == str(client_id)) \
@@ -46,7 +49,6 @@ def get_channel_prioritys_by_user(client_id: str) -> list[channel_priority]:
 
 
 def update_channel_priority(client_id: str, channel_id: str, priority: str) -> channel_priority:
-    print("update")
     with Session(engine) as session:
         channel = session.query(channel_priority) \
             .filter(channel_priority.user_id == str(client_id)) \
@@ -61,3 +63,15 @@ def update_channel_priority(client_id: str, channel_id: str, priority: str) -> c
 
 
 # NO NEED TO DELETE
+
+
+# def delete_channel_priority(client_id: str, channel_id: str) -> bool:
+#     if (get_channel_priority(client_id, channel_id) == None):
+#         return False
+#     with Session(engine) as session:
+#         channel = session.query(channel_priority) \
+#             .filter(channel_priority.user_id == str(client_id)) \
+#             .filter(channel_priority.channel_id == str(channel_id)) \
+#             .delete()
+#         session.commit()
+#     return True

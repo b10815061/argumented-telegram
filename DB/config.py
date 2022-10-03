@@ -23,7 +23,7 @@ channel_priority = Table('channel_priority', metadata,
                          Column('priority', Integer)
                          )
 
-channel_announce = Table('channel_announce', metadata,
+channel_important_msg = Table('channel_important_msg', metadata,
                          Column('user_id', String),
                          Column('channel_id', String),
                          Column('important_msg_id', String)

@@ -13,10 +13,10 @@ class channel_priority(Base):
     channel_id = Column(String)
     priority = Column(Integer)
 
-class channel_announce(Base):
-    __tablename__ = "channel_announce"
+class channel_important_msg(Base):
+    __tablename__ = "channel_important_msg"
     __table_args__ = (
-        PrimaryKeyConstraint('user_id', 'channel_id'),
+        PrimaryKeyConstraint('user_id', 'channel_id', 'important_msg_id'),
     )
 
     user_id = Column(String)
@@ -33,7 +33,7 @@ class setting(Base):
 
 
 # database spec
-# channel priority				        channel announce    				        setting		
+# channel priority				        channel important_msg    				        setting		
 # user_id       STRING  使用者id		user_id	            STRING	使用者id		user_id     STRING	使用者id
 # channel_id    STRING	頻道id          channel_id	        STRING	頻道id		    font_size   INT     字體大小
 # priority	    INT 	優先度          important_msg_id	STRING	定選訊息id		language    STRING	使用語言
