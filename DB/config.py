@@ -24,10 +24,10 @@ channel_priority = Table('channel_priority', metadata,
                          )
 
 channel_important_msg = Table('channel_important_msg', metadata,
-                         Column('user_id', String),
-                         Column('channel_id', String),
-                         Column('important_msg_id', String)
-                         )
+                              Column('user_id', String),
+                              Column('channel_id', String),
+                              Column('important_msg_id', String)
+                              )
 
 setting = Table('setting', metadata,
                 Column('user_id', String),

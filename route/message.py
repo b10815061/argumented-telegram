@@ -143,14 +143,22 @@ async def ack():
     data = await request.get_json()
     user_id = data["user_id"]
     user = await utils.find_user(utils.client_list, user_id)
-    if user != None:
-        if user.is_connect():
-            channel_id = data["channel_id"]
-            await user.send_read_acknowledge(channel_id)
+    try:
+        if user != None:
+            if user.is_connected():
+                channel_id = data["channel_id"]
+                await user.send_read_acknowledge(channel_id)
+                obj = {
+                    "channel_id": channel_id
+                }
+                return response.make_response("System", obj, 200)
+            else:
+                return response.make_response("System", "You are not connected!", 400)
         else:
-            return response.make_response("System", "You are not connected!", 400)
-    else:
-        return response.make_response("System", "user not found", 404)
+            return response.make_response("System", "user not found", 404)
+    except Exception as e:
+        print(e)
+        return response.make_response("System", e, 500)
 
 
 @blueprint.get('/getMessage')
