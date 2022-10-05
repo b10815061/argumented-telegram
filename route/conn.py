@@ -141,9 +141,6 @@ async def conn(sid, userid):
     """
     persist the user connection and send webhook messages received by telegram
     """
-    print("==== current user list ====")
-    print(utils.client_list)
-    print("=== end of current user list ===")
     client = await utils.find_user(utils.client_list, userid)
     user: telethon.client_describe_obj = await client.get_me()
     print(userid, "persisting")
