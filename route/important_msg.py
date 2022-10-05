@@ -16,7 +16,7 @@ class ImportantMsgDTO:
 """
 job:    get channel important_msgs in a channel
 route:  GET "/channel/important_msg/<id>"
-input:  channel_id: channel id, important_msg_id: message id to be important (json)
+input:  channel_id: channel id (parameter) (optional)
 output: list of important messages, 200
 """
 
@@ -25,11 +25,14 @@ output: list of important messages, 200
 async def getImportantMsg(id):
     channel_id = request.args.get("channel_id")
 
-    if (channel_id == None):
-        return response.make_response("System", "lack of channel_id", 400)
+    important_msg_list = []
 
-    important_msg_list = Important_Msg.get_channel_important_msgs(
-        id, str(channel_id))
+    if (channel_id == None):
+        important_msg_list = Important_Msg.get_channel_important_msgs_by_user(
+            id)
+    else:
+        important_msg_list = Important_Msg.get_channel_important_msgs(
+            id, str(channel_id))
     for idx, important_msg in enumerate(important_msg_list):
         important_msg_list[idx] = ImportantMsgDTO(
             important_msg.user_id, important_msg.channel_id, important_msg.important_msg_id).__dict__
