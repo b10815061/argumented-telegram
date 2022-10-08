@@ -3,6 +3,7 @@ from PIL import Image
 from quart import websocket
 import response
 import os
+import io
 import shutil
 import telethon
 import socketio
@@ -172,6 +173,23 @@ async def send_profile(dialogs, client, client_id):
         channel_pri = -1
         if (channel_get != None):
             channel_pri = channel_get.priority
+        
+        participants = []
+        if d.is_group:
+            user_list = await client.get_participants(d.entity)
+            for u in user_list:
+                user_profile = await client.download_profile_photo(u, file=bytes)
+                if user_profile != None:
+                    tmp_image = Image.open(io.BytesIO(user_profile))
+                    # tmp_image.thumbnail([64, 64], Image.ANTIALIAS)
+                    buf = io.BytesIO(user_profile)
+                    # tmp_image.save(buf, format="png")
+                    byte_thumb = buf.getvalue()
+                    b64 = base64.b64encode(byte_thumb)
+                    b64 = b64.decode()
+                    participants.append({"id": u.entity.id, "b64": b64})
+                    # print(b64)
+        
         try:
             # make thumbnail
             image = Image.open(path)
@@ -202,7 +220,8 @@ async def send_profile(dialogs, client, client_id):
                     "message_id": message.id,
                     "timestamp": str(message.date)
                 },
-                "unread_count": d.unread_count
+                "unread_count": d.unread_count,
+                "participants": participants
             }
 
             global sio
