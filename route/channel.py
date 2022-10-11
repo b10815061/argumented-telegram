@@ -5,7 +5,8 @@ import response
 import route.util as utils
 from telethon import functions, types
 from DB.crud import priority
-from telethon.sync import TelegramClient
+import telethon.tl.custom.dialog
+import route.DTOs as DTOs
 from PIL import Image
 import io
 import base64
@@ -77,8 +78,25 @@ async def channel_list(uid):
 
     channelList = []
     channel_count = 0
+    d: telethon.tl.custom.dialog.Dialog
     async for d in user.iter_dialogs():
         channel_pri = -1
+        # if d.is_group:
+        #     print(d.entity)
+        #     print(d.dialog)
+        #     user_list = await user.get_participants(d.entity)
+        #     for u in user_list:
+        #         user_profile = await user.download_profile_photo(u, file=bytes)
+        #         if user_profile != None:
+        #             tmp_image = Image.open(io.BytesIO(user_profile))
+        #             tmp_image.show()
+        #             # tmp_image.thumbnail([64, 64], Image.ANTIALIAS)
+        #             buf = io.BytesIO(user_profile)
+        #             # tmp_image.save(buf, format="png")
+        #             byte_thumb = buf.getvalue()
+        #             b64 = base64.b64encode(byte_thumb)
+        #             b64 = b64.decode()
+        #             # print(b64)
         for prioritity in priority_list:
             if (int(prioritity.channel_id) == int(d.entity.id)):
                 channel_pri = prioritity.priority
@@ -97,7 +115,7 @@ async def channel_list(uid):
                 b64 = base64.b64encode(byte_thumb)
                 b64 = b64.decode()
 
-        channel_dto = ChannelDTO(
+        channel_dto = DTOs.ChannelDTO(
             d.entity.id, d.name, channel_pri, b64, d.unread_count)
         channelList.append(channel_dto.__dict__)
         # print(f"channel id: {channel_dto.id}, channel name: {channel_dto.name}")
@@ -106,14 +124,6 @@ async def channel_list(uid):
         channel_count += 1
 
     if page_count != -1:
-        channelList = channelList[page_count * slice_by: (page_count + 1) * slice_by]
+        channelList = channelList[page_count *
+                                  slice_by: (page_count + 1) * slice_by]
     return response.make_response("System", channelList, 200)
-
-
-class ChannelDTO:
-    def __init__(self, channel_id, channel_name, priority, b64, unread_count):
-        self.id = channel_id
-        self.name = channel_name
-        self.priority = priority
-        self.b64 = b64
-        self.unread_count = unread_count

@@ -6,6 +6,7 @@ from telethon.tl.types import InputPrivacyKeyStatusTimestamp, InputPrivacyKeyCha
 from telethon.tl.functions.photos import UploadProfilePhotoRequest
 from telethon.errors.rpcerrorlist import PhoneNumberOccupiedError, PhoneNumberInvalidError, PrivacyKeyInvalidError
 import route.util as utils
+import route.DTOs as DTOs
 import telethon
 import base64
 import response
@@ -205,17 +206,9 @@ async def getUISetting(id):
     if setting == None:
         setting = Setting.create_setting(id, None, None)
 
-    setting = UISettingDTO(
+    setting = DTOs.UISettingDTO(
         setting.user_id, setting.font_size, setting.language)
     return response.make_response("System", setting.__dict__, 200)
-
-
-class UISettingDTO:
-    def __init__(self, user_id, font_size, language):
-        self.id = user_id
-        self.font_size = font_size
-        self.language = language
-
 
 """
 job:    update ui setting (related to our DB)

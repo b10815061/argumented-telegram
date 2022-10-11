@@ -5,6 +5,7 @@ from telethon.sync import TelegramClient
 from user.channel.message import incoming_msg
 import response
 import route.util as utils
+import route.DTOs as DTOs
 import user.channel.message.util as message_utils
 import telethon
 import json
@@ -193,19 +194,22 @@ async def getMessage():
 
                     # get the time when the message has been sent
                     msg_time = msg_instance.date
-                    if(sender_id is None):
+                    if (sender_id is None):
                         sender_id = channel_id
 
-                    obj = {
-                        "tag": tag,
-                        "channel": channel_id,
-                        "from": sender,
-                        "sender_id": sender_id,
-                        "data": msg_content,
-                        "message_id": msg_instance.id,  # save the message id for advanced functions
-                        "timestamp": str(msg_time)
-                    }
-                    context.append(obj)
+                    obj = DTOs.MessageDTO(sender_id=sender_id, sender_name=sender, channel_id=channel_id,
+                                          message_id=msg_instance.id, content=msg_content, timestamp=str(msg_time), tag=tag)
+
+                    # obj = {
+                    #     "tag": tag,
+                    #     "channel": channel_id,
+                    #     "from": sender,
+                    #     "sender_id": sender_id,
+                    #     "data": msg_content,
+                    #     "message_id": msg_instance.id,  # save the message id for advanced functions
+                    #     "timestamp": str(msg_time)
+                    # }
+                    context.append(obj.__dict__)
 
                 message = response.make_response("message", context, 200)
             except Exception as e:

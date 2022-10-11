@@ -2,19 +2,12 @@ from quart import Blueprint, Request, ResponseReturnValue, request
 from DB.crud import important_msg as Important_Msg
 from telethon import TelegramClient
 from telethon.tl.types import Message
+import route.DTOs as DTOs
 import route.util as utils
+import user.channel.message.util as message_utils
 import response
 
 blueprint = Blueprint("important_msg", __name__)
-
-
-class ImportantMsgDTO:
-    def __init__(self, user_id, channel_id, important_msg_id, important_msg_content):
-        self.user_id = user_id
-        self.channel_id = channel_id
-        self.important_msg_id = important_msg_id
-        self.important_msg_content = important_msg_content
-
 
 """
 job:    get channel important_msgs in a channel
@@ -42,10 +35,27 @@ async def getImportantMsg(id):
     output_msg_list = []
     for important_msg in important_msg_list:
         channel_instance = await user.get_entity((int(important_msg.channel_id)))
+
         msg_instance: Message = await user.get_messages(channel_instance, ids=int(important_msg.important_msg_id))
         if msg_instance != None:
-            output_msg_list.append(ImportantMsgDTO(important_msg.user_id, important_msg.channel_id,
-                                   important_msg.important_msg_id, msg_instance.message).__dict__)
+            sender_id, sender_name = await message_utils.get_sender(msg_instance, user, channel_instance)
+            # get the message content
+            try:
+                tag, msg_content = await message_utils.context_handler(
+                    id, user, msg_instance)
+            except Exception as e:
+                print(e)
+                print(msg_instance)
+                print(msg_content)
+                raise Exception(e)
+
+            # get the time when the message has been sent
+            msg_time = msg_instance.date
+            if (sender_id is None):
+                sender_id = channel_id
+
+            output_msg_list.append(DTOs.MessageDTO(sender_id=sender_id, sender_name=sender_name, channel_id=channel_id,
+                                   message_id=important_msg.important_msg_id, content=msg_content, timestamp=str(msg_time), tag=tag).__dict__)
 
     return response.make_response("System", output_msg_list, 200)
 
