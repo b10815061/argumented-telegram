@@ -52,9 +52,9 @@ async def getImportantMsg(id):
             # get the time when the message has been sent
             msg_time = msg_instance.date
             if (sender_id is None):
-                sender_id = channel_id
+                sender_id = important_msg.channel_id
 
-            output_msg_list.append(DTOs.MessageDTO(sender_id=sender_id, sender_name=sender_name, channel_id=channel_id,
+            output_msg_list.append(DTOs.MessageDTO(sender_id=sender_id, sender_name=sender_name, channel_id=important_msg.channel_id,
                                    message_id=important_msg.important_msg_id, content=msg_content, timestamp=str(msg_time), tag=tag).__dict__)
 
     return response.make_response("System", output_msg_list, 200)
