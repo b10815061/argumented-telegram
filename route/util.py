@@ -187,7 +187,7 @@ async def send_profile(dialogs, client, client_id):
                     byte_thumb = buf.getvalue()
                     b64 = base64.b64encode(byte_thumb)
                     b64 = b64.decode()
-                    participants.append({"id": u.entity.id, "b64": b64})
+                    participants.append({"id": u.id, "b64": b64})
                     # print(b64)
         
         try:
