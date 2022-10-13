@@ -52,6 +52,8 @@ async def get_sticker_code(cur: int, Stickerpath: str, client_id) -> str:  # !!!
 
 
 async def context_handler(client_id, client, message) -> Tuple[str, str]:
+    tag: str = ""
+    context: str = ""
     if type(message.media) == telethon.tl.types.MessageMediaPhoto:
         tag = "image"
         context = await get_file_code(client_id, client, message)
