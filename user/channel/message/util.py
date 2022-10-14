@@ -51,6 +51,37 @@ async def get_sticker_code(cur: int, Stickerpath: str, client_id) -> str:  # !!!
     return data
 
 
+async def outline_context_handler(message) -> Tuple[str, str]:
+    tag: str = ""
+    context: str = ""
+    if type(message.media) == telethon.tl.types.MessageMediaPhoto:
+        tag = "image"
+        context = "send an image"
+    elif type(message.media) == telethon.tl.types.MessageMediaDocument:
+        mime_type = message.media.document.mime_type
+        if mime_type == "video/mp4":
+            tag = "mp4"
+            context = "send a video"
+        elif mime_type == "application/x-tgsticker":
+            tag = "gif"
+            context = "send a sticker"
+        elif mime_type == "audio/ogg":
+            tag = "audio"
+            context = "send an audio"
+        elif mime_type == "application/pdf":
+            tag = "pdf"
+            context = "send a pdf"
+    else:
+        tag = "message"
+        data = message.message
+        try:
+            context = data.replace("\\", "\\\\").replace("\"", "\\\"")
+        except:
+            context = data
+
+    return tag, context
+
+
 async def context_handler(client_id, client, message) -> Tuple[str, str]:
     tag: str = ""
     context: str = ""

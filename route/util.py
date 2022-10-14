@@ -159,8 +159,7 @@ async def send_profile(dialogs, client, client_id):
         path = f"./user/userid{client_id}/{ID}.png"
         message_list = await client.get_messages(d, 1)
         message = message_list[0]
-        tag, context = await message_utils.context_handler(
-            client_id, client, message)
+        tag, context = await message_utils.outline_context_handler(message)
         sender_id, sender = await message_utils.get_sender(message, client, d)
 
         if(sender_id is None):
