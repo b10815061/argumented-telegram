@@ -24,9 +24,11 @@ async def get_sender(msg_instance, user, channel_instance):
                 lname = sender_instance.last_name if sender_instance.last_name != None else ""
                 sender = sender_instance.first_name + lname
             else:
-                print("AN ERROR MIGHT OCCUR")
-                print(sender_instance, end="\n\n\n")
-                sender = "Deleted account"
+                if(sender_instance.deleted):
+                    sender = "Deleted account"
+                else:
+                    print("=== UNHANDLED SENDER ===")
+                    print(sender_instance)
         except:
             sender = sender_instance.title
     except Exception as e:
