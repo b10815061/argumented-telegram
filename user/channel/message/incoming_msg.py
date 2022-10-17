@@ -30,10 +30,10 @@ def listen_on(client_list, me):
         message_id = event.message.id
         obj = {
             "tag": tag,
-            "channel": channel.id,
+            "channel_id": channel.id,
             "sender_id": sender_id,
             "from": sender,
-            "data": context,
+            "content": context,
             "message_id": message_id,
             "timestamp": str(timestamp)
         }

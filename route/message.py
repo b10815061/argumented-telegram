@@ -43,14 +43,14 @@ async def sendFile():
 
                 os.remove(des)
 
-                _, sender = await message_utils.get_sender(file_instance, user, channel_instance)
+                # _, sender = await message_utils.get_sender(file_instance, user, channel_instance)
 
                 obj = {
                     "tag": "image",
-                    "channel": channel_id,
+                    "channel_id": channel_id,
                     "sender_id": user_id,
-                    "from": sender,
-                    "data": data,
+                    "sender_name": "me",
+                    "content": data,
                     "message_id": file_instance.id,  # save the message id for advanced functions
                     "timestamp": str(file_instance.date)
                 }
@@ -88,10 +88,10 @@ async def send():
                 message_instance = await user.send_message(entity=name, message=message)
                 obj = {
                     "tag": "message",
-                    "channel": channel_id,
+                    "channel_id": channel_id,
                     "sender_id": user_id,
-                    "from": "me",
-                    "data": message,
+                    "sender_name": "me",
+                    "content": message,
                     "message_id": message_instance.id,  # save the message id for advanced functions
                     "timestamp": str(message_instance.date)
                 }
