@@ -175,7 +175,7 @@ async def send_profile(sid, dialogs, client, client_id):
 
         participants = []
         if d.is_group:
-            user_list = await client.get_participants(d.entity)
+            user_list = await client.get_participants(d.entity, limit=5000)
             for u in user_list:
                 # user_profile = await client.download_profile_photo(u, file=bytes)
                 # if user_profile != None:
@@ -189,6 +189,7 @@ async def send_profile(sid, dialogs, client, client_id):
                 #     participants.append({"id": u.id, "b64": b64})
                 #     # print(b64)
                 participants.append({"id": u.id})
+
         try:
             # make thumbnail
             image = Image.open(path)

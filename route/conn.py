@@ -111,29 +111,33 @@ async def verify():
 #             allow_methods=["POST"],
 #             allow_origin=["http://localhost:3000"])
 async def checkConnection():
-    data = await request.get_json()
-    uid = data["uid"]
-    client = await utils.find_user(utils.client_list, uid)
+    try:
+        data = await request.get_json()
+        uid = data["uid"]
+        client = await utils.find_user(utils.client_list, uid)
 
-    if client != None:
-        me = await client.get_me()
-        profile_pic_data = await utils.get_profile_pic(client, me.id)
-    else:
-        return response.make_response("System", "Unauthorized", 401)
+        if client != None:
+            me = await client.get_me()
+            profile_pic_data = await utils.get_profile_pic(client, me.id)
+        else:
+            return response.make_response("System", "Unauthorized", 401)
 
-    if(me != None):
-        res = {}
-        res["id"] = me.id
-        res["username"] = me.username
-        res["access_hash"] = me.access_hash
-        res["first_name"] = me.first_name
-        res["last_name"] = me.last_name
-        res["phone"] = me.phone
-        res["profile_pic"] = profile_pic_data
-        # json_data = json.dumps(result, ensure_ascii=False)
-        return response.make_response("System", res, 200)
-    else:
-        return response.make_response("System", "Unauthorized", 401)
+        if(me != None):
+            res = {}
+            res["id"] = me.id
+            res["username"] = me.username
+            res["access_hash"] = me.access_hash
+            res["first_name"] = me.first_name
+            res["last_name"] = me.last_name
+            res["phone"] = me.phone
+            res["profile_pic"] = profile_pic_data
+            # json_data = json.dumps(result, ensure_ascii=False)
+            return response.make_response("System", res, 200)
+        else:
+            return response.make_response("System", "Unauthorized", 401)
+    except Exception as e:
+        print(e)
+        return response.make_response("System", e, 500)
 
 
 @utils.sio.event
@@ -152,12 +156,19 @@ async def conn(sid, userid):
     utils.client_list[user.id] = client
 
     dialogs: list[telethon.Dialog] = await client.get_dialogs()
+
+    # listen on message
+    incoming_msg.listen_on(sid, utils.client_list, user)
+
     # send profile and unread count
     await utils.send_profile(sid, dialogs, client, user.id)
 
     print(" ==== profile_sent ====")
-    # listen on message
-    incoming_msg.listen_on(sid, utils.client_list, user)
+
+
+@utils.sio.event
+async def disconnect(sid):
+    print(sid, "disconnected")
 
 
 # Logout
