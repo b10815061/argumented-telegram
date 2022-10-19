@@ -147,7 +147,7 @@ async def send_unread_count(dialogs):
 
 
 # iterate through dialog and send profile one by one
-async def send_profile(dialogs, client, client_id):
+async def send_profile(sid, dialogs, client, client_id):
     size = 64, 64
     for d in dialogs:
         if type(d.message.peer_id) == telethon.tl.types.PeerChannel:
@@ -225,4 +225,4 @@ async def send_profile(dialogs, client, client_id):
 
             global sio
             # websocket.send(str(obj).replace("\'", "\""))
-            await sio.emit('initial', obj)
+            await sio.emit('initial', obj, room=sid)

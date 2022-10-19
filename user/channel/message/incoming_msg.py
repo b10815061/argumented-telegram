@@ -7,7 +7,7 @@ from telethon.sync import events
 import route.util as utils
 
 
-def listen_on(client_list, me):
+def listen_on(sid, client_list, me):
     """ hook on incoming messages,
     return -> (json) : 
     [tag: tag to be parsed, 
@@ -44,4 +44,4 @@ def listen_on(client_list, me):
         # obj = obj.replace("{'", '{"').replace("'}", '"}')
         # obj = obj.replace("\\\\", "\\")
         # print(obj)
-        await utils.sio.emit("message", obj)
+        await utils.sio.emit("message", obj, sid)

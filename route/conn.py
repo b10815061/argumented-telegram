@@ -141,22 +141,23 @@ async def conn(sid, userid):
     """
     persist the user connection and send webhook messages received by telegram
     """
+
     client = await utils.find_user(utils.client_list, userid)
     user: telethon.client_describe_obj = await client.get_me()
     print(userid, "persisting")
     res = await utils.make_folder(user.id)
     if res != "":
-        await utils.sio.emit('conn', res)
+        await utils.sio.emit('conn', res, room=sid)
 
     utils.client_list[user.id] = client
 
     dialogs: list[telethon.Dialog] = await client.get_dialogs()
     # send profile and unread count
-    await utils.send_profile(dialogs, client, user.id)
+    await utils.send_profile(sid, dialogs, client, user.id)
 
     print(" ==== profile_sent ====")
     # listen on message
-    incoming_msg.listen_on(utils.client_list, user)
+    incoming_msg.listen_on(sid, utils.client_list, user)
 
 
 # Logout
