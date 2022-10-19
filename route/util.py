@@ -214,8 +214,8 @@ async def send_profile(dialogs, client, client_id):
                 "last_message": {
                     "tag": tag,
                     "sender_id": sender_id,
-                    "from": sender,
-                    "data": context,
+                    "sender_name": sender,
+                    "content": context,
                     "message_id": message.id,
                     "timestamp": str(message.date)
                 },

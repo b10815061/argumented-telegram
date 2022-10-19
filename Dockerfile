@@ -19,4 +19,4 @@ FROM builder
 WORKDIR /usr/src/app
 COPY --from=builder . ./usr/src/app
 EXPOSE 5000
-CMD ["python" , "main.py"]
+CMD ["python" , "-u" ,"main.py"]
