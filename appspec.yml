@@ -1,0 +1,21 @@
+version: 0.0
+
+os: linux
+folders:
+  - source: ./
+    destination: /usr/src/app
+files:
+  - source: ./
+    destination: /usr/src/app
+file_exists_behavior: OVERWRITE
+permissions:
+  - object: /usr/src/app/scripts
+    pattern: "*.sh"
+    mode: 777
+    type:
+      - file
+hooks:
+  BeforeInstall:
+    - location : ./scripts/stop_docker_compose.sh
+  AfterInstall: 
+    - location : ./scripts/start_docker_compose.sh
