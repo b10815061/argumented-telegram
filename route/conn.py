@@ -31,9 +31,6 @@ async def disconnect():
 
 
 @blueprint.post("/login")
-# @route_cors(allow_headers=["content-type"],
-#             allow_methods=["POST"],
-#             allow_origin=["http://localhost:3000"])
 async def login() -> str:  # return userID to frontend
     """
     establish connection
@@ -68,9 +65,6 @@ async def login() -> str:  # return userID to frontend
 
 
 @blueprint.post("/verify")
-# @route_cors(allow_headers=["content-type"],
-#             allow_methods=["POST"],
-#             allow_origin=["http://localhost:3000"])
 async def verify():
     """
     verify the user phone
@@ -107,9 +101,6 @@ async def verify():
 
 # Check authorized yet or not
 @blueprint.post('/checkConnection')
-# @route_cors(allow_headers=["content-type"],
-#             allow_methods=["POST"],
-#             allow_origin=["http://localhost:3000"])
 async def checkConnection():
     try:
         data = await request.get_json()
@@ -173,9 +164,6 @@ async def disconnect(sid):
 
 # Logout
 @blueprint.post('/logout')
-# @route_cors(allow_headers=["content-type"],
-#             allow_methods=["POST"],
-#             allow_origin=["http://localhost:3000"])
 async def logout():
     data = await request.get_json()
     uid = data["uid"]
