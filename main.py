@@ -25,7 +25,7 @@ host = "0.0.0.0" if os.getenv("FROM") == "DOCKER" else "127.0.0.1"
 app = Quart(__name__)
 app = cors(app_or_blueprint=app,
            allow_headers=["content-type"],
-           allow_methods=["GET", "POST"],
+           allow_methods=["GET", "POST", "DELETE"],
            allow_origin=[os.getenv("FRONTEND_SITE")])
 
 app.register_blueprint(base_blueprint)
@@ -35,7 +35,6 @@ app.register_blueprint(setting_blueprint)
 app.register_blueprint(channel_blueprint)
 app.register_blueprint(priority_blueprint)
 app.register_blueprint(important_msg_blueprint)
-
 
 
 @app.errorhandler(Exception)

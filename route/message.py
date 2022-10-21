@@ -10,7 +10,7 @@ import user.channel.message.util as message_utils
 import telethon
 import json
 import os
-from pprint import pprint
+from telethon import functions
 
 blueprint = Blueprint("message", __name__)
 
@@ -29,7 +29,6 @@ async def sendFile():
 
         print(user_id, channel_id)
         user = await utils.find_user(utils.client_list, user_id)
-        channel_instance: telethon.Channel = await user.get_entity((int(channel_id)))
         if user != None:
             if user.is_connected():
                 des = os.path.join(os.getcwd(), "user",
@@ -106,6 +105,46 @@ async def send():
         return response.make_response("System", "user not found", 404)
 
 
+@blueprint.get("/getPinnedMessage")
+async def getPin():
+    """
+    due to the API of telethon
+    currently support only 1 pinned message
+    """
+    try:
+        user_id = int(request.args.get("user_id"))
+        channel_id = int(request.args.get("channel_id"))
+        user = await utils.find_user(utils.client_list, user_id)
+        if user != None:
+            if user.is_connected():
+                channel_instance = await user.get_entity(channel_id)
+                if type(channel_instance) == telethon.tl.types.User:
+                    fulluser = await user(
+                        functions.users.GetFullUserRequest(id=channel_id))
+                    pinned_message_ids = fulluser.full_user.pinned_msg_id
+                elif type(channel_instance) == telethon.tl.types.Chat:
+                    fulluser = await user(
+                        functions.messages.GetFullChatRequest(chat_id=channel_id))
+                    pinned_message_ids = fulluser.full_chat.pinned_msg_id
+                else:
+                    fulluser = await user(
+                        functions.channels.GetFullChannelRequest(channel=channel_id))
+                    pinned_message_ids = fulluser.full_chat.pinned_msg_id
+                pinned_message = await user.get_messages(
+                    channel_id, ids=pinned_message_ids)
+                _, context = await message_utils.outline_context_handler(pinned_message)
+                obj = {
+                    "message_id": pinned_message_ids,
+                    "context": context
+                }
+                return response.make_response("sys", obj, 200)
+        else:
+            return response.make_response("sys", "not login", 401)
+    except Exception as e:
+        print(e)
+        return response.make_response("err", e, 500)
+
+
 @ blueprint.post("/pin")
 async def pin():
     """pin a messaage in the channel /
@@ -176,7 +215,7 @@ async def getMessage():
                 message_id) == 0 else int(message_id)
             try:
                 channel_instance: telethon.Channel = await user.get_entity((int(channel_id)))
-                msgs: list[telethon.message] = await user.get_messages(channel_instance, limit=5, offset_id=from_message_id)
+                msgs: list[telethon.message] = await user.get_messages(channel_instance, limit=1, offset_id=from_message_id)
                 context = []
 
                 msg_instance: telethon.message
