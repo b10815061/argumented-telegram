@@ -130,9 +130,13 @@ async def getPin():
                     fulluser = await user(
                         functions.channels.GetFullChannelRequest(channel=channel_id))
                     pinned_message_ids = fulluser.full_chat.pinned_msg_id
-                pinned_message = await user.get_messages(
-                    channel_id, ids=pinned_message_ids)
-                _, context = await message_utils.outline_context_handler(pinned_message)
+                if pinned_message_ids != None:
+                    pinned_message = await user.get_messages(
+                        channel_id, ids=pinned_message_ids)
+                    _, context = await message_utils.outline_context_handler(pinned_message)
+                else:
+                    pinned_message_ids = -1
+                    context = ""
                 obj = {
                     "message_id": pinned_message_ids,
                     "context": context
