@@ -24,12 +24,13 @@ class channel_important_msg(Base):
     important_msg_id = Column(String)
 
 class setting(Base):
-    __tablename__ = "setting"
+    __tablename__ = "ui_setting"
     __table_args__ = (PrimaryKeyConstraint('user_id'),)
 
     user_id = Column(String)
     font_size = Column(Integer)
     language = Column(String)
+    bubble_count = Column(Integer)
 
 
 # database spec
@@ -37,3 +38,4 @@ class setting(Base):
 # user_id       STRING  使用者id		user_id	            STRING	使用者id		user_id     STRING	使用者id
 # channel_id    STRING	頻道id          channel_id	        STRING	頻道id		    font_size   INT     字體大小
 # priority	    INT 	優先度          important_msg_id	STRING	定選訊息id		language    STRING	使用語言
+#                                                                                  bubble_count INT    首頁bubble 

@@ -204,10 +204,10 @@ output: return data, 200
 async def getUISetting(id):
     setting = Setting.get_setting(id)
     if setting == None:
-        setting = Setting.create_setting(id, None, None)
+        setting = Setting.create_setting(id, None, None, None)
 
     setting = DTOs.UISettingDTO(
-        setting.user_id, setting.font_size, setting.language)
+        setting.user_id, setting.font_size, setting.language, setting.bubble_count)
     return response.make_response("System", setting.__dict__, 200)
 
 """
@@ -223,6 +223,7 @@ async def updateUISetting(id):
     data = await request.get_json()
     font_size = 1
     language = "en"
+    bubble_count = 10
     if "font_size" in data:
         font_size = data["font_size"]
     else:
@@ -233,8 +234,13 @@ async def updateUISetting(id):
     else:
         language = None
 
+    if "bubble_count" in data:
+        bubble_count = data["bubble_count"]
+    else:
+        bubble_count = None
+
     new_setting = Setting.update_setting(
-        id, font_size, language)
+        id, font_size, language, bubble_count)
 
     if new_setting == None:
         return response.make_response("System", "ui setting set failed", 500)

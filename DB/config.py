@@ -29,10 +29,11 @@ channel_important_msg = Table('channel_important_msg', metadata,
                               Column('important_msg_id', String)
                               )
 
-setting = Table('setting', metadata,
+setting = Table('ui_setting', metadata,
                 Column('user_id', String),
                 Column('font_size', Integer),
-                Column('language', String)
+                Column('language', String),
+                Column('bubble_count', Integer)
                 )
 
 metadata.create_all(engine)

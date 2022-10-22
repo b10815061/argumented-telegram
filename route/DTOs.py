@@ -19,10 +19,11 @@ class ChannelDTO:
 
 
 class UISettingDTO:
-    def __init__(self, user_id, font_size, language):
+    def __init__(self, user_id, font_size, language, bubble_count):
         self.id = user_id
         self.font_size = font_size
         self.language = language
+        self.bubble_count = bubble_count
 
 
 class GroupParticipantsDTO:
