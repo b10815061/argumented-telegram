@@ -2,6 +2,7 @@ import base64
 from quart import Blueprint, render_template, request, websocket
 # from quart_cors import route_cors
 from telethon.sync import TelegramClient
+from user.channel import message
 from user.channel.message import incoming_msg
 import response
 import route.util as utils
@@ -209,6 +210,22 @@ async def ack():
     except Exception as e:
         print(e)
         return response.make_response("System", e, 500)
+
+
+@blueprint.delete("/deleteMessage")
+async def deleteMessage():
+    try:
+        user_id = int(request.args.get("user_id"))
+        channel_id = int(request.args.get("channel_id"))
+        message_id = int(request.args.get("message_id"))
+        print(user_id, channel_id, message_id)
+        user = await utils.find_user(utils.client_list, user_id)
+        print(user)
+        await user.delete_messages(entity=channel_id, message_ids=message_id)
+        return response.make_response("System", "OK", 200)
+    except Exception as e:
+        print(e)
+        return response.make_response("Error", e, 400)
 
 
 @blueprint.get('/getMessage')
