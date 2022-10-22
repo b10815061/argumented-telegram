@@ -5,7 +5,7 @@ from . import util as message_utils
 from telethon.sync import events
 # from quart import websocket
 import route.util as utils
-
+import route.DTOs as DTOs
 
 def listen_on(sid, client_list, me):
     """ hook on incoming messages,
@@ -28,20 +28,15 @@ def listen_on(sid, client_list, me):
         timestamp = event.message.date
         tag, context = await message_utils.context_handler(me.id, client_list[me.id], event.message)
         message_id = event.message.id
-        obj = {
-            "tag": tag,
-            "channel_id": channel.id,
-            "sender_id": sender_id,
-            "sender_name": sender,
-            "content": context,
-            "message_id": message_id,
-            "timestamp": str(timestamp)
-        }
-        # obj = str(obj)
-        # obj = obj.replace("\\\'", "\'")
-        # obj = obj.replace(", '", ', "').replace("',", '",')
-        # obj = obj.replace(": '", ': "').replace("':", '":')
-        # obj = obj.replace("{'", '{"').replace("'}", '"}')
-        # obj = obj.replace("\\\\", "\\")
-        # print(obj)
-        await utils.sio.emit("message", obj, sid)
+        # obj = {
+        #     "tag": tag,
+        #     "channel_id": channel.id,
+        #     "sender_id": sender_id,
+        #     "sender_name": sender,
+        #     "content": context,
+        #     "message_id": message_id,
+        #     "timestamp": str(timestamp)
+        # }
+        obj = DTOs.MessageDTO(sender_id=sender_id, sender_name=sender, channel_id=channel.id,
+                                          message_id=message_id, content=context, timestamp=str(timestamp), tag=tag)
+        await utils.sio.emit("message", obj.__dict__, sid)
