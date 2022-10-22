@@ -23,3 +23,9 @@ class UISettingDTO:
         self.id = user_id
         self.font_size = font_size
         self.language = language
+
+
+class GroupParticipantsDTO:
+    def __init__(self, channel_id, participants):
+        self.id = channel_id
+        self.participants = participants

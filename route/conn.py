@@ -138,6 +138,7 @@ async def conn(sid, userid):
     """
 
     client = await utils.find_user(utils.client_list, userid)
+    # BUG: no client check
     user: telethon.client_describe_obj = await client.get_me()
     print(userid, "persisting")
     res = await utils.make_folder(user.id)
@@ -145,6 +146,7 @@ async def conn(sid, userid):
         await utils.sio.emit('conn', res, room=sid)
 
     utils.client_list[user.id] = client
+    # BUG: reset client_list data after login
 
     dialogs: list[telethon.Dialog] = await client.get_dialogs()
 
@@ -156,7 +158,7 @@ async def conn(sid, userid):
 
     print(" ==== profile_sent ====")
 
-
+# TODO: delete it or add real functions
 @utils.sio.event
 async def disconnect(sid):
     print(sid, "disconnected")

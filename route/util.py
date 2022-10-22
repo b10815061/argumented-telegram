@@ -10,6 +10,7 @@ import socketio
 from telethon.sync import TelegramClient
 import user.channel.message.util as message_utils
 from DB.crud import priority as priority_utils
+import route.DTOs as DTOs
 from os import listdir
 from os.path import isfile, join
 
@@ -149,6 +150,7 @@ async def send_unread_count(dialogs):
 # iterate through dialog and send profile one by one
 async def send_profile(sid, dialogs, client, client_id):
     size = 64, 64
+    group_list = []
     for d in dialogs:
         if type(d.message.peer_id) == telethon.tl.types.PeerChannel:
             ID = d.message.peer_id.channel_id
@@ -166,33 +168,20 @@ async def send_profile(sid, dialogs, client, client_id):
             sender_id = ID
 
         # this might not download successfully if user has no profile
-        await client.download_profile_photo(d, file=path, download_big=False)
+        await client.download_profile_photo(d, file=path, download_big=False) # BUG: should not use this way, it saves user's personal data
 
         channel_get = priority_utils.get_channel_priority(client_id, ID)
         channel_pri = -1
         if (channel_get != None):
             channel_pri = channel_get.priority
 
-        participants = []
+        
         if d.is_group:
-            user_list = await client.get_participants(d.entity, limit=5000)
-            for u in user_list:
-                # user_profile = await client.download_profile_photo(u, file=bytes)
-                # if user_profile != None:
-                #     tmp_image = Image.open(io.BytesIO(user_profile))
-                #     # tmp_image.thumbnail([64, 64], Image.ANTIALIAS)
-                #     buf = io.BytesIO(user_profile)
-                #     # tmp_image.save(buf, format="png")
-                #     byte_thumb = buf.getvalue()
-                #     b64 = base64.b64encode(byte_thumb)
-                #     b64 = b64.decode()
-                #     participants.append({"id": u.id, "b64": b64})
-                #     # print(b64)
-                participants.append({"id": u.id})
+            group_list.append({"id": ID, "instance": d})
 
         try:
             # make thumbnail
-            image = Image.open(path)
+            image = Image.open(path) # BUG: should not use this way, it saves user's personal data
             image.thumbnail(size, Image.ANTIALIAS)
             thumbpath = f"./user/userid{client_id}/{ID}_thumb.png"
             image.save(thumbpath, "PNG")
@@ -220,10 +209,29 @@ async def send_profile(sid, dialogs, client, client_id):
                     "message_id": message.id,
                     "timestamp": str(message.date)
                 },
-                "unread_count": d.unread_count,
-                "participants": participants
+                "unread_count": d.unread_count
             }
 
             global sio
             # websocket.send(str(obj).replace("\'", "\""))
             await sio.emit('initial', obj, room=sid)
+
+    for g in group_list:
+        participants = []
+        user_list = await client.get_participants(g["instance"].entity, limit=5000)
+        for u in user_list:
+            user_profile = await client.download_profile_photo(u, file=bytes)
+            if user_profile != None:
+                tmp_image = Image.open(io.BytesIO(user_profile))
+                # tmp_image.thumbnail([64, 64], Image.ANTIALIAS)
+                buf = io.BytesIO(user_profile)
+                # tmp_image.save(buf, format="png")
+                byte_thumb = buf.getvalue()
+                b64 = base64.b64encode(byte_thumb)
+                b64 = b64.decode()
+                participants.append({"id": u.id, "b64": b64})
+                # print(b64)
+            else:
+                participants.append({"id": u.id, "b64": ""})
+        group_participants_obj = DTOs.GroupParticipantsDTO(g["id"], participants)
+        await sio.emit('group_participants', group_participants_obj.__dict__, room=sid)
