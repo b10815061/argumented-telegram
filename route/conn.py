@@ -138,7 +138,9 @@ async def conn(sid, userid):
     """
 
     client = await utils.find_user(utils.client_list, userid)
-    # BUG: no client check
+    if client == None:
+        await utils.sio.emit('conn', "uesr not found", room=sid)
+        return
     user: telethon.client_describe_obj = await client.get_me()
     print(userid, "persisting")
     res = await utils.make_folder(user.id)

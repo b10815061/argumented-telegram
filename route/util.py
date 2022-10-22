@@ -175,9 +175,12 @@ async def send_profile(sid, dialogs, client, client_id):
         if (channel_get != None):
             channel_pri = channel_get.priority
 
-        
+        participants = []
         if d.is_group:
+            user_list = await client.get_participants(d.entity, limit=5000)
             group_list.append({"id": ID, "instance": d})
+            for u in user_list:
+                participants.append({"id": u.id})
 
         try:
             # make thumbnail
@@ -209,7 +212,8 @@ async def send_profile(sid, dialogs, client, client_id):
                     "message_id": message.id,
                     "timestamp": str(message.date)
                 },
-                "unread_count": d.unread_count
+                "unread_count": d.unread_count,
+                "participants": participants
             }
 
             global sio
