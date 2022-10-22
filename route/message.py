@@ -121,7 +121,10 @@ async def getPin():
                 if type(channel_instance) == telethon.tl.types.User:
                     fulluser = await user(
                         functions.users.GetFullUserRequest(id=channel_id))
-                    pinned_message_ids = fulluser.full_user.pinned_msg_id
+                    try:
+                        pinned_message_ids = fulluser.full_user.pinned_msg_id
+                    except:
+                        pinned_message_ids = fulluser.pinned_msg_id
                 elif type(channel_instance) == telethon.tl.types.Chat:
                     fulluser = await user(
                         functions.messages.GetFullChatRequest(chat_id=channel_id))
@@ -156,25 +159,28 @@ async def pin():
     channel_id : the telegram channelID,
     message_id : the to-be-pinned messageID]
     """
-    data = await request.get_json()
-    user_id = data["user_id"]
-    channel_id = data["channel_id"]
-    message_id: str = data["message_id"]
-    user = await utils.find_user(utils.client_list, user_id)
-    if user != None:
-        if user.is_connected():
-            try:
-                name = await user.get_entity(int(channel_id))
-                await user.pin_message(entity=name, message=int(message_id))
-                return response.make_response("System", f'{channel_id} : {message_id}', 200)
-            except Exception as e:
-                print(e)
-                return response.make_response("System", f'you can\'t pin in this channel ({channel_id})', 401)
-        else:
+    try:
+        data = await request.get_json()
+        user_id = int(data["user_id"])
+        channel_id = int(data["channel_id"])
+        message_id = int(data["message_id"])
+        user = await utils.find_user(utils.client_list, user_id)
+        if user != None:
+            if user.is_connected():
+                try:
+                    name = await user.get_entity(channel_id)
+                    await user.pin_message(entity=name, message=message_id)
+                    return response.make_response("System", f'{channel_id} : {message_id}', 200)
+                except Exception as e:
+                    print(e)
+                    return response.make_response("System", f'you can\'t pin in this channel ({channel_id})', 401)
+            else:
 
-            return response.make_response("System", "You are not Connected!", 400)
-    else:
-        return response.make_response("System", "user not found", 404)
+                return response.make_response("System", "You are not Connected!", 400)
+        else:
+            return response.make_response("System", "user not found", 404)
+    except Exception as e:
+        return response.make_response("Error", e, 500)
 
 
 @ blueprint.post("/ack")
