@@ -32,7 +32,7 @@ def listen_on(sid, client_list, me):
             "tag": tag,
             "channel_id": channel.id,
             "sender_id": sender_id,
-            "from": sender,
+            "sender_name": sender,
             "content": context,
             "message_id": message_id,
             "timestamp": str(timestamp)
