@@ -158,7 +158,7 @@ async def send_profile(sid, dialogs, client, client_id):
             ID = d.message.peer_id.chat_id
         else:
             ID = d.message.peer_id.user_id
-        path = f"./user/userid{client_id}/{ID}.png"
+        # path = f"./user/userid{client_id}/{ID}.png"
         message_list = await client.get_messages(d, 1)
         message = message_list[0]
         tag, context = await message_utils.outline_context_handler(message)
@@ -167,8 +167,9 @@ async def send_profile(sid, dialogs, client, client_id):
         if(sender_id is None):
             sender_id = ID
 
-        # this might not download successfully if user has no profile
-        await client.download_profile_photo(d, file=path, download_big=False) # BUG: should not use this way, it saves user's personal data
+        # # this might not download successfully if user has no profile
+        # await client.download_profile_photo(d, file=path, download_big=False) # BUG: should not use this way, it saves user's personal data
+        
 
         channel_get = priority_utils.get_channel_priority(client_id, ID)
         channel_pri = -1
@@ -184,16 +185,24 @@ async def send_profile(sid, dialogs, client, client_id):
 
         try:
             # make thumbnail
-            image = Image.open(path) # BUG: should not use this way, it saves user's personal data
-            image.thumbnail(size, Image.ANTIALIAS)
-            thumbpath = f"./user/userid{client_id}/{ID}_thumb.png"
-            image.save(thumbpath, "PNG")
+            # image = Image.open(path) # BUG: should not use this way, it saves user's personal data
+            # image.thumbnail(size, Image.ANTIALIAS)
+            # thumbpath = f"./user/userid{client_id}/{ID}_thumb.png"
+            # image.save(thumbpath, "PNG")
 
-            with open(thumbpath, "rb") as file:
-                raw_data = file.read()
-                b64 = base64.b64encode(raw_data).decode()
-            os.remove(path)
-            os.remove(thumbpath)
+            # with open(thumbpath, "rb") as file:
+            #     raw_data = file.read()
+            #     b64 = base64.b64encode(raw_data).decode()
+            # os.remove(path)
+            # os.remove(thumbpath)
+            profile_result = await client.download_profile_photo(d, file=bytes, download_big=False)
+            tmp_image = Image.open(io.BytesIO(profile_result))
+            tmp_image.thumbnail(size, Image.ANTIALIAS)
+            buf = io.BytesIO(profile_result)
+            tmp_image.save(buf, format="png")
+            byte_thumb = buf.getvalue()
+            b64 = base64.b64encode(byte_thumb)
+            b64 = b64.decode()
         except:
             b64 = "no profile"
 

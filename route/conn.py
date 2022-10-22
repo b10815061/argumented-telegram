@@ -143,9 +143,9 @@ async def conn(sid, userid):
         return
     user: telethon.client_describe_obj = await client.get_me()
     print(userid, "persisting")
-    res = await utils.make_folder(user.id)
-    if res != "":
-        await utils.sio.emit('conn', res, room=sid)
+    # res = await utils.make_folder(user.id)
+    # if res != "":
+    #     await utils.sio.emit('conn', res, room=sid)
 
     utils.client_list[user.id] = client
     # BUG: reset client_list data after login
