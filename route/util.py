@@ -229,22 +229,22 @@ async def send_profile(sid, dialogs, client, client_id):
             # websocket.send(str(obj).replace("\'", "\""))
             await sio.emit('initial', obj, room=sid)
 
-    for g in group_list:
-        participants = []
-        user_list = await client.get_participants(g["instance"].entity, limit=5000)
-        for u in user_list:
-            user_profile = await client.download_profile_photo(u, file=bytes)
-            if user_profile != None:
-                tmp_image = Image.open(io.BytesIO(user_profile))
-                # tmp_image.thumbnail([64, 64], Image.ANTIALIAS)
-                buf = io.BytesIO(user_profile)
-                # tmp_image.save(buf, format="png")
-                byte_thumb = buf.getvalue()
-                b64 = base64.b64encode(byte_thumb)
-                b64 = b64.decode()
-                participants.append({"id": u.id, "b64": b64})
-                # print(b64)
-            else:
-                participants.append({"id": u.id, "b64": ""})
-        group_participants_obj = DTOs.GroupParticipantsDTO(g["id"], participants)
-        await sio.emit('group_participants', group_participants_obj.__dict__, room=sid)
+    # for g in group_list:
+    #     participants = []
+    #     user_list = await client.get_participants(g["instance"].entity, limit=5000)
+    #     for u in user_list:
+    #         user_profile = await client.download_profile_photo(u, file=bytes)
+    #         if user_profile != None:
+    #             tmp_image = Image.open(io.BytesIO(user_profile))
+    #             # tmp_image.thumbnail([64, 64], Image.ANTIALIAS)
+    #             buf = io.BytesIO(user_profile)
+    #             # tmp_image.save(buf, format="png")
+    #             byte_thumb = buf.getvalue()
+    #             b64 = base64.b64encode(byte_thumb)
+    #             b64 = b64.decode()
+    #             participants.append({"id": u.id, "b64": b64})
+    #             # print(b64)
+    #         else:
+    #             participants.append({"id": u.id, "b64": ""})
+    #     group_participants_obj = DTOs.GroupParticipantsDTO(g["id"], participants)
+    #     await sio.emit('group_participants', group_participants_obj.__dict__, room=sid)

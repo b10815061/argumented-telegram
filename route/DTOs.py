@@ -30,3 +30,9 @@ class GroupParticipantsDTO:
     def __init__(self, channel_id, participants):
         self.id = channel_id
         self.participants = participants
+
+
+class userPhotoDTO:
+    def __init__(self, user_id, b64):
+        self.id = user_id
+        self.b64 = b64

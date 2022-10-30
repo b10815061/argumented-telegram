@@ -127,3 +127,47 @@ async def channel_list(uid):
         channelList = channelList[page_count *
                                   slice_by: (page_count + 1) * slice_by]
     return response.make_response("System", channelList, 200)
+
+
+"""
+job:    get other users' photo
+route:  GET "/channel/photo/uid"
+input:  user_list: list of user id split by ','
+output: channel_list: each object contains id, name, priority, b64, unread_count
+note:   it may be slow because of lots of image request
+"""
+
+
+@blueprint.get("/channel/photo/<uid>")
+async def photo_list(uid):
+    client: TelegramClient = await utils.find_user(utils.client_list, int(uid))
+    if client == None:
+        return response.make_response("System", "user not found / not login", 404)
+
+    user_list = request.args.get("user_list")
+    if user_list == None:
+        return response.make_response("System", "lack of user list", 400)
+    user_list = user_list.split(",")
+
+    participants = []
+    for u in user_list:
+        user_entity = None
+        try:
+            user_entity = await client.get_entity(int(u))
+        except:
+            return response.make_response("System", "user in user list not found", 404)
+        
+        participant = DTOs.userPhotoDTO(u, "")
+        user_profile = await client.download_profile_photo(user_entity, file=bytes)
+        if user_profile != None:
+            tmp_image = Image.open(io.BytesIO(user_profile))
+            # tmp_image.thumbnail([64, 64], Image.ANTIALIAS)
+            buf = io.BytesIO(user_profile)
+            # tmp_image.save(buf, format="png")
+            byte_thumb = buf.getvalue()
+            b64 = base64.b64encode(byte_thumb)
+            b64 = b64.decode()
+            participant.b64 = b64
+            # print(b64)
+        participants.append(participant.__dict__)
+    return response.make_response("System", participants, 200)
