@@ -295,7 +295,7 @@ async def getMessage():
 """
 job:    get message list with specific target
 route:  GET "/messages"
-input:  user_id: user id, channel_id: channel id, message_id: message id, limit: length of message list to get (may be less if reaches the newest one)
+input:  user_id: user id, channel_id: channel id, message_id: message id, limit: length of message list to get (may be less if reaches the newest one) (default 10), reverse (1 or 0): whether getting older or newer data (1 = newer) (default True)
 output: json format message data list, 200
 """
 
@@ -305,6 +305,7 @@ async def getMessageList():
     channel_id = request.args.get("channel_id")
     message_id = request.args.get("message_id")
     limit = request.args.get("limit")
+    reverse = request.args.get("reverse")
 
     if user_id == None:
         return response.make_response("System", "userid not provided", 404)
@@ -321,15 +322,24 @@ async def getMessageList():
 
     if limit == None:
         limit = 10
+    
+    if reverse == None:
+        reverse = True
 
     user_id = int(user_id)
     channel_id = int(channel_id)
-    message_id = int(message_id) - 1 # -1 is to contact with telethon API, which is exclusive
+    reverse = int(reverse) == 1
     limit = int(limit)
+
+    # +-1 is to contact with telethon API, which is exclusive
+    if reverse:
+        message_id = int(message_id) - 1
+    else:
+        message_id = int(message_id) + 1
 
     channel_instance = await user.get_entity(channel_id)
     message_list = []
-    msgs = await user.get_messages(channel_instance, limit=limit, offset_id=message_id, reverse=True)
+    msgs = await user.get_messages(channel_instance, limit=limit, offset_id=message_id, reverse=reverse)
     for msg_instance in msgs:  # totally same as what's in getMessage, which is quite wired
         sender_id, sender = await message_utils.get_sender(msg_instance, user, channel_instance)
         # get the message content
@@ -360,5 +370,6 @@ async def getMessageList():
         #     "timestamp": str(msg_time)
         # }
         message_list.append(obj.__dict__)
-
+    
+    message_list = sorted(message_list, key=lambda d: d['message_id']) 
     return response.make_response("message", message_list, 200)
