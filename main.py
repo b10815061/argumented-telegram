@@ -43,6 +43,8 @@ def internelServerErrorHandler(e: Exception):
         "className": e.__class__.__name__,
         "message": e.__str__()
     }
+    if (err_msg["className"] == "NotFound"):
+        return response.make_response("System", err_msg, 404)
     return response.make_response("System", err_msg, 500)
 
 

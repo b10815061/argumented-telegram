@@ -290,3 +290,86 @@ async def getMessage():
             message = response.make_response(
                 "Error", "you are not connected", 400)
     return message
+
+
+"""
+job:    get message list with specific target
+route:  GET "/messages"
+input:  user_id: user id, channel_id: channel id, message_id: message id, limit: length of message list to get (may be less if reaches the newest one) (default 10), reverse (1 or 0): whether getting older or newer data (1 = newer) (default True)
+output: json format message data list, 200
+"""
+
+@blueprint.get('/messages')
+async def getMessageList():
+    user_id = request.args.get("user_id")
+    channel_id = request.args.get("channel_id")
+    message_id = request.args.get("message_id")
+    limit = request.args.get("limit")
+    reverse = request.args.get("reverse")
+
+    if user_id == None:
+        return response.make_response("System", "userid not provided", 404)
+
+    if channel_id == None:
+        return response.make_response("System", "channelid not provided", 404)
+
+    if message_id == None:
+        return response.make_response("System", "messageid not provided", 404)
+
+    user = await utils.find_user(utils.client_list, user_id)
+    if user == None:
+        return response.make_response("System", "user not found / not login", 404)
+
+    if limit == None:
+        limit = 10
+    
+    if reverse == None:
+        reverse = True
+
+    user_id = int(user_id)
+    channel_id = int(channel_id)
+    reverse = int(reverse) == 1
+    limit = int(limit)
+
+    # +-1 is to contact with telethon API, which is exclusive
+    if reverse:
+        message_id = int(message_id) - 1
+    else:
+        message_id = int(message_id) + 1
+
+    channel_instance = await user.get_entity(channel_id)
+    message_list = []
+    msgs = await user.get_messages(channel_instance, limit=limit, offset_id=message_id, reverse=reverse)
+    for msg_instance in msgs:  # totally same as what's in getMessage, which is quite wired
+        sender_id, sender = await message_utils.get_sender(msg_instance, user, channel_instance)
+        # get the message content
+        try:
+            tag, msg_content = await message_utils.context_handler(
+                user_id, user, msg_instance)
+        except Exception as e:
+            print(e)
+            print(msg_instance)
+            print(msg_content)
+            raise Exception(e)
+
+        # get the time when the message has been sent
+        msg_time = msg_instance.date
+        if (sender_id is None):
+            sender_id = channel_id
+
+        obj = DTOs.MessageDTO(sender_id=sender_id, sender_name=sender, channel_id=channel_id,
+                              message_id=msg_instance.id, content=msg_content, timestamp=str(msg_time), tag=tag)
+
+        # obj = {
+        #     "tag": tag,
+        #     "channel": channel_id,
+        #     "from": sender,
+        #     "sender_id": sender_id,
+        #     "data": msg_content,
+        #     "message_id": msg_instance.id,  # save the message id for advanced functions
+        #     "timestamp": str(msg_time)
+        # }
+        message_list.append(obj.__dict__)
+    
+    message_list = sorted(message_list, key=lambda d: d['message_id']) 
+    return response.make_response("message", message_list, 200)
