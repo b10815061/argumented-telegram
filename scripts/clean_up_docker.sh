@@ -2,4 +2,4 @@
 
 set -e
 PATH=$PATH:/usr/local/bin
-docker system prune -f
+docker image prune -f

@@ -1,9 +1,10 @@
 import base64
 import os
 import telethon
-import pyrlottie
 import time
 from typing import Any, Tuple
+import json
+import gzip
 
 
 async def get_sender(msg_instance, user, channel_instance):
@@ -39,17 +40,11 @@ async def get_sender(msg_instance, user, channel_instance):
     return user_id, sender
 
 
-async def get_sticker_code(cur: int, Stickerpath: str, client_id) -> str:  # !!!!too slow
-    print("entering lock")
-    path = f"./user/userid{client_id}/{cur}.gif"
-    await pyrlottie.convSingleLottie(lottieFile=pyrlottie.LottieFile(Stickerpath), destFiles=[path])
-    # send byte index to frontend
-    with open(path, 'rb') as file:
-        gif_data = file.read()
-        data = base64.b64encode(gif_data).decode()
-    os.remove(Stickerpath)
-    os.remove(path)
-    print("out of lock")
+async def get_sticker_code(Stickerpath: str) -> str:  # !!!!too slow
+    start_time = time.perf_counter()
+    data = gzip.decompress(Stickerpath)
+    end_time = time.perf_counter()
+    print("sticker time = ", end_time - start_time)
     return data
 
 
@@ -97,8 +92,10 @@ async def context_handler(client_id, client, message) -> Tuple[str, str]:
             context = await get_file_code(client_id, client, message)
         elif mime_type == "application/x-tgsticker":
             tag = "gif"
-            stickerPath = await client.download_media(message, file=f"./user/userid{client_id}")
-            context = await get_sticker_code(time.time_ns(), stickerPath, client_id)
+            stickerPath = await client.download_media(message, file=bytes)
+            context = await get_sticker_code(stickerPath)
+            dic = json.loads(context)
+            context = json.dumps(dic)
         elif mime_type == "audio/ogg":
             tag = "audio"
             context = await get_file_code(client_id, client, message)
