@@ -331,15 +331,19 @@ async def getMessageList():
     reverse = int(reverse) == 1
     limit = int(limit)
 
-    # +-1 is to contact with telethon API, which is exclusive
-    if reverse:
-        message_id = int(message_id) - 1
-    else:
-        message_id = int(message_id) + 1
-
     channel_instance = await user.get_entity(channel_id)
     message_list = []
-    msgs = await user.get_messages(channel_instance, limit=limit, offset_id=message_id, reverse=reverse)
+    msgs = []
+    if limit == -1:
+        msgs = await user.get_messages(channel_instance, limit=None, offset_id=int(message_id) - 1, reverse=True)
+    else:
+        # +-1 is to contact with telethon API, which is exclusive
+        if reverse:
+            message_id = int(message_id) - 1
+        else:
+            message_id = int(message_id) + 1
+        msgs = await user.get_messages(channel_instance, limit=limit, offset_id=message_id, reverse=reverse)
+
     for msg_instance in msgs:  # totally same as what's in getMessage, which is quite wired
         sender_id, sender = await message_utils.get_sender(msg_instance, user, channel_instance)
         # get the message content
