@@ -7,4 +7,4 @@ echo $PATH
 PATH=$PATH:/usr/local/bin
 echo $PATH
 cd /usr/src/app 
-docker-compose up --build -d
+docker-compose up --build -d || echo "do nothing"
