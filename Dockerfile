@@ -10,8 +10,8 @@ RUN apt-get update \
     && apt-get install -y vim
 RUN pip uninstall python-socketio -y \
     && pip install python-socketio
-RUN chmod 777 /usr/local/lib/python3.9/site-packages/pyrlottie/linux_x86_64/gif2webp \
-    && chmod 777 /usr/local/lib/python3.9/site-packages/pyrlottie/linux_x86_64/lottie2gif
+# RUN chmod 777 /usr/local/lib/python3.9/site-packages/pyrlottie/linux_x86_64/gif2webp \
+#     && chmod 777 /usr/local/lib/python3.9/site-packages/pyrlottie/linux_x86_64/lottie2gif
 COPY . ./
 
 FROM builder

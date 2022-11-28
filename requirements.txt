@@ -1,6 +1,5 @@
 gevent_socketio==0.3.6
 Pillow==9.2.0
-pyrlottie==2022.0.1
 python-dotenv==0.21.0
 quart==0.18.0
 Quart_CORS==0.5.0

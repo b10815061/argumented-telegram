@@ -21,10 +21,11 @@ async def disconnect():
     user = await utils.find_user(utils.client_list, userID)
     if user != None:
         utils.remove_from_list(utils.client_list, userID)
-        res = await utils.delete_folder(userID)
-        if res != "":
-            return response.make_response("System", res, 200)
+        # res = await utils.delete_folder(userID)
+        # if res != "":
+        #     return response.make_response("System", res, 200)
         await user.disconnect()
+        print(f"{userID} disconnected")
         return response.make_response("System", "log out successfully", 200)
     else:
         return response.make_response("System", "user not found", 404)
@@ -36,32 +37,36 @@ async def login() -> str:  # return userID to frontend
     establish connection
     params(json) : [phone : user's phone to login telegram service]
     """
-    data = await request.get_json()
-    phone = data["phone"]
-    client = TelegramClient(phone, utils.api_id, utils.api_hash)
-    await client.connect()
-    if await utils.has_session(client, phone):
-        me = await client.get_me()
-        profile_pic_data = await utils.get_profile_pic(client, me.id)
+    try:
+        data = await request.get_json()
+        phone = data["phone"]
+        client = TelegramClient(phone, utils.api_id, utils.api_hash)
+        await client.connect()
+        if await utils.has_session(client, phone):
+            me = await client.get_me()
+            profile_pic_data = await utils.get_profile_pic(client, me.id)
 
-        res = {}
-        res["id"] = me.id
-        res["username"] = me.username
-        res["access_hash"] = me.access_hash
-        res["first_name"] = me.first_name
-        res["last_name"] = me.last_name
-        res["phone"] = me.phone
-        res["profile_pic"] = profile_pic_data
-        # json_data = json.dumps(res, ensure_ascii=False)
+            res = {}
+            res["id"] = me.id
+            res["username"] = me.username
+            res["access_hash"] = me.access_hash
+            res["first_name"] = me.first_name
+            res["last_name"] = me.last_name
+            res["phone"] = me.phone
+            res["profile_pic"] = profile_pic_data
+            # json_data = json.dumps(res, ensure_ascii=False)
 
-        # Change from Phone to User ID
-        utils.client_list[me.id] = client
+            # Change from Phone to User ID
+            utils.client_list[me.id] = client
 
-        return response.make_response("System", res, 202)
-    else:
-        # This line should be added as client can only provide unique phone number
-        utils.client_list[phone] = client
-        return response.make_response("System", "please enter the code received in your telegram app", 200)
+            return response.make_response("System", res, 202)
+        else:
+            # This line should be added as client can only provide unique phone number
+            utils.client_list[phone] = client
+            return response.make_response("System", "please enter the code received in your telegram app", 200)
+    except Exception as e:
+        print(e)
+        return response.make_response("System", e, 500)
 
 
 @blueprint.post("/verify")
@@ -161,6 +166,8 @@ async def conn(sid, userid):
     print(" ==== profile_sent ====")
 
 # TODO: delete it or add real functions
+
+
 @utils.sio.event
 async def disconnect(sid):
     print(sid, "disconnected")
