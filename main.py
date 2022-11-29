@@ -50,4 +50,4 @@ sio_app = socketio.ASGIApp(utils.sio, app, socketio_path="socket.io")
 
 if __name__ == "__main__":
     utils.init()
-    uvicorn.run(sio_app, port=5000, host=host)#, ssl_certfile="server.crt", ssl_keyfile="server.key")
+    uvicorn.run(sio_app, port=5000, host=host, ssl_certfile="server.crt", ssl_keyfile="server.key")
