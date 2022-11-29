@@ -36,7 +36,6 @@ app.register_blueprint(channel_blueprint)
 app.register_blueprint(priority_blueprint)
 app.register_blueprint(important_msg_blueprint)
 
-
 @app.errorhandler(Exception)
 def internelServerErrorHandler(e: Exception):
     err_msg = {
@@ -47,9 +46,8 @@ def internelServerErrorHandler(e: Exception):
         return response.make_response("System", err_msg, 404)
     return response.make_response("System", err_msg, 500)
 
-
 sio_app = socketio.ASGIApp(utils.sio, app, socketio_path="socket.io")
 
 if __name__ == "__main__":
     utils.init()
-    uvicorn.run(sio_app, port=5000, host=host)
+    uvicorn.run(sio_app, port=5000, host=host)#, ssl_certfile="server.crt", ssl_keyfile="server.key")
