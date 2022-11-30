@@ -5,13 +5,14 @@ import time
 from typing import Any, Tuple
 import json
 import gzip
+import logging
 
 
 async def get_sender(msg_instance, user, channel_instance):
     # get the sender of the msg
     try:
         # !!! messages in Chat (2 frineds channel) has no from_id attribute
-        if(msg_instance.from_id != None):
+        if (msg_instance.from_id != None):
             sender_instance = await user.get_entity(msg_instance.from_id.user_id)
             user_id = msg_instance.from_id.user_id
         else:
@@ -25,26 +26,23 @@ async def get_sender(msg_instance, user, channel_instance):
                 lname = sender_instance.last_name if sender_instance.last_name != None else ""
                 sender = sender_instance.first_name + lname
             else:
-                if(sender_instance.deleted):
+                if (sender_instance.deleted):
                     sender = "Deleted account"
                 else:
-                    print("=== UNHANDLED SENDER ===")
-                    print(sender_instance)
+                    logging.error("=== UNHANDLED SENDER ===")
+                    logging.error(sender_instance)
         except:
             sender = sender_instance.title
     except Exception as e:
-        print(e)
-        print(channel_instance)
-        print(msg_instance)
+        logging.error(e)
+        logging.error(channel_instance)
+        logging.error(msg_instance)
         return "ERROR"
     return user_id, sender
 
 
 async def get_sticker_code(Stickerpath: str) -> str:  # !!!!too slow
-    start_time = time.perf_counter()
     data = gzip.decompress(Stickerpath)
-    end_time = time.perf_counter()
-    print("sticker time = ", end_time - start_time)
     return data
 
 

@@ -6,6 +6,8 @@ from telethon.sync import events
 # from quart import websocket
 import route.util as utils
 import route.DTOs as DTOs
+import logging
+
 
 def listen_on(sid, client_list, me):
     """ hook on incoming messages,
@@ -19,11 +21,11 @@ def listen_on(sid, client_list, me):
     """
     @client_list[me.id].on(events.NewMessage())
     async def onMessage(event):
-        print("message incoming : \n")
-        print(event.message)
+
+        logging.info(f"{event.message.id} for {me.id}")
         channel: telethon.Channel = await event.get_chat()
         sender_id, sender = await message_utils.get_sender(event.message, client_list[me.id], channel)
-        if(sender_id is None):
+        if (sender_id is None):
             sender_id = channel.id
         timestamp = event.message.date
         tag, context = await message_utils.context_handler(me.id, client_list[me.id], event.message)
@@ -38,5 +40,5 @@ def listen_on(sid, client_list, me):
         #     "timestamp": str(timestamp)
         # }
         obj = DTOs.MessageDTO(sender_id=sender_id, sender_name=sender, channel_id=channel.id,
-                                          message_id=message_id, content=context, timestamp=str(timestamp), tag=tag)
+                              message_id=message_id, content=context, timestamp=str(timestamp), tag=tag)
         await utils.sio.emit("message", obj.__dict__, sid)

@@ -6,6 +6,7 @@ import route.DTOs as DTOs
 import route.util as utils
 import user.channel.message.util as message_utils
 import response
+import logging
 
 blueprint = Blueprint("important_msg", __name__)
 
@@ -44,9 +45,9 @@ async def getImportantMsg(id):
                 tag, msg_content = await message_utils.context_handler(
                     id, user, msg_instance)
             except Exception as e:
-                print(e)
-                print(msg_instance)
-                print(msg_content)
+                logging.error(e)
+                logging.error(msg_instance)
+                logging.error(msg_content)
                 raise Exception(e)
 
             # get the time when the message has been sent

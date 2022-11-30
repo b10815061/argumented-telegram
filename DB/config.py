@@ -38,6 +38,4 @@ setting = Table('ui_setting', metadata,
 
 metadata.create_all(engine)
 
-# print("success")
-
 Base = declarative_base()  # inherit from this class to create ORM models

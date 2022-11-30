@@ -30,5 +30,5 @@ async def updatePriority(id):
 
     if new_priority == None:
         return response.make_response("System", "priority set failed", 500)
-    # print(new_priority.__dict__)
+
     return response.make_response("System", "OK", 200)
