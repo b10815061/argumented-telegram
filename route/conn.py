@@ -76,6 +76,7 @@ async def login() -> str:  # return userID to frontend
             utils.client_list[phone] = client
             return response.make_response("System", "please enter the code received in your telegram app", 200)
     except Exception as e:
+        os.remove(f"{phone}.session")
         logging.error(e)
         return response.make_response("System", e, 500)
 
