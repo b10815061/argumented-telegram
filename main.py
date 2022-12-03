@@ -7,6 +7,7 @@ from route.priority import blueprint as priority_blueprint
 from route.important_msg import blueprint as important_msg_blueprint
 from quart_cors import cors
 from quart import Quart
+from quart_jwt_extended import JWTManager
 import os
 import socketio
 import uvicorn
@@ -23,6 +24,12 @@ if os.getenv("FROM") is None:
 host = "0.0.0.0" if os.getenv("FROM") == "DOCKER" else "127.0.0.1"
 
 app = Quart(__name__)
+
+# Setup the Quart-JWT-Extended extension
+app.config["JWT_SECRET_KEY"] = "tuna-birdy-UN"
+jwt = JWTManager(app)
+
+# set up cors rules
 app = cors(app_or_blueprint=app,
            allow_headers=["content-type"],
            allow_methods=["GET", "POST", "DELETE"],
@@ -48,6 +55,7 @@ def internelServerErrorHandler(e: Exception):
 
 sio_app = socketio.ASGIApp(utils.sio, app, socketio_path="socket.io")
 
+utils.init()
+
 if __name__ == "__main__":
-    utils.init()
     uvicorn.run(sio_app, port=5000, host=host, ssl_certfile="server.crt", ssl_keyfile="server.key")
