@@ -9,7 +9,7 @@ import route.util as utils
 import route.DTOs as DTOs
 import user.channel.message.util as message_utils
 import telethon
-import json
+import logging
 import os
 from telethon import functions
 
@@ -24,11 +24,9 @@ async def sendFile():
     try:
         data: quart.datastruture.FieldStorage = await request.files
         file = data["file"]
-        print(file)
         user_id = int(request.args.get("user_id"))
         channel_id = int(request.args.get("channel_id"))
 
-        print(user_id, channel_id)
         user = await utils.find_user(utils.client_list, user_id)
         if user != None:
             if user.is_connected():
@@ -61,7 +59,7 @@ async def sendFile():
         else:
             return response.make_response("System", "user not found", 404)
     except Exception as e:
-        print(e)
+        logging.error(e)
         return response.make_response("System", "Internal Server Error", 500)
 
 
@@ -97,7 +95,7 @@ async def send():
                 }
                 return response.make_response("message", obj, 200)
             except Exception as e:
-                print(e)
+                logging.error(e)
                 return response.make_response("System", f'you can\'t write in this channel ({channel_id})', 401)
         else:
 
@@ -149,7 +147,7 @@ async def getPin():
         else:
             return response.make_response("sys", "not login", 401)
     except Exception as e:
-        print(e)
+        logging.error(e)
         return response.make_response("err", e, 500)
 
 
@@ -173,7 +171,7 @@ async def pin():
                     await user.pin_message(entity=name, message=message_id)
                     return response.make_response("System", f'{channel_id} : {message_id}', 200)
                 except Exception as e:
-                    print(e)
+                    logging.error(e)
                     return response.make_response("System", f'you can\'t pin in this channel ({channel_id})', 401)
             else:
 
@@ -208,7 +206,7 @@ async def ack():
         else:
             return response.make_response("System", "user not found", 404)
     except Exception as e:
-        print(e)
+        logging.error(e)
         return response.make_response("System", e, 500)
 
 
@@ -218,13 +216,11 @@ async def deleteMessage():
         user_id = int(request.args.get("user_id"))
         channel_id = int(request.args.get("channel_id"))
         message_id = int(request.args.get("message_id"))
-        print(user_id, channel_id, message_id)
         user = await utils.find_user(utils.client_list, user_id)
-        print(user)
         await user.delete_messages(entity=channel_id, message_ids=message_id)
         return response.make_response("System", "OK", 200)
     except Exception as e:
-        print(e)
+        logging.error(e)
         return response.make_response("Error", e, 400)
 
 
@@ -253,9 +249,9 @@ async def getMessage():
                         tag, msg_content = await message_utils.context_handler(
                             user_id, user, msg_instance)
                     except Exception as e:
-                        print(e)
-                        print(msg_instance)
-                        print(msg_content)
+                        logging.error(e)
+                        logging.error(msg_instance)
+                        logging.error(msg_content)
                         raise Exception(e)
 
                     # get the time when the message has been sent
@@ -279,13 +275,13 @@ async def getMessage():
 
                 message = response.make_response("message", context, 200)
             except Exception as e:
-                print(e)
+                logging.error(e)
                 err_msg = {
                     "className": e.__class__.__name__,
                     "message": e.__str__()
                 }
                 message = response.make_response("Error", err_msg, 500)
-                print("channel_not_found")
+                logging.error("channel_not_found")
         else:
             message = response.make_response(
                 "Error", "you are not connected", 400)
@@ -298,6 +294,7 @@ route:  GET "/messages"
 input:  user_id: user id, channel_id: channel id, message_id: message id, limit: length of message list to get (may be less if reaches the newest one) (default 10), reverse (1 or 0): whether getting older or newer data (1 = newer) (default True)
 output: json format message data list, 200
 """
+
 
 @blueprint.get('/messages')
 async def getMessageList():
@@ -322,7 +319,7 @@ async def getMessageList():
 
     if limit == None:
         limit = 10
-    
+
     if reverse == None:
         reverse = True
 
@@ -351,9 +348,9 @@ async def getMessageList():
             tag, msg_content = await message_utils.context_handler(
                 user_id, user, msg_instance)
         except Exception as e:
-            print(e)
-            print(msg_instance)
-            print(msg_content)
+            logging.error(e)
+            logging.error(msg_instance)
+            logging.error(msg_content)
             raise Exception(e)
 
         # get the time when the message has been sent
@@ -374,6 +371,6 @@ async def getMessageList():
         #     "timestamp": str(msg_time)
         # }
         message_list.append(obj.__dict__)
-    
-    message_list = sorted(message_list, key=lambda d: d['message_id']) 
+
+    message_list = sorted(message_list, key=lambda d: d['message_id'])
     return response.make_response("message", message_list, 200)

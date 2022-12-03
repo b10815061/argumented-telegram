@@ -25,7 +25,6 @@ async def mute():
     user_id = data["user_id"]
     channel_id = data["channel_id"]
     state = data["state"]
-    print(state)
     user = await utils.find_user(utils.client_list, user_id)
 
     if user != None:
@@ -36,7 +35,6 @@ async def mute():
                 silent=False
             )
         ))
-        print(result)
         return response.make_response("System", str(channel_id) + str(result))
     else:
         return response.make_response("System", "user not found")
@@ -156,7 +154,7 @@ async def photo_list(uid):
             user_entity = await client.get_entity(int(u))
         except:
             return response.make_response("System", "user in user list not found", 404)
-        
+
         participant = DTOs.userPhotoDTO(u, "")
         user_profile = await client.download_profile_photo(user_entity, file=bytes)
         if user_profile != None:

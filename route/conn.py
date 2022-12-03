@@ -5,8 +5,8 @@ from user.channel.message import incoming_msg
 import response
 import route.util as utils
 import telethon
-import json
-
+import os
+import logging
 blueprint = Blueprint("connection", __name__)
 
 
@@ -17,18 +17,22 @@ async def disconnect():
     params(json) : [userid : the telegram userID]
     returns -> 200 : success / TODO : 404
     """
-    userID: str = (request.args.get("user_id"))
-    user = await utils.find_user(utils.client_list, userID)
-    if user != None:
-        utils.remove_from_list(utils.client_list, userID)
-        # res = await utils.delete_folder(userID)
-        # if res != "":
-        #     return response.make_response("System", res, 200)
-        await user.disconnect()
-        print(f"{userID} disconnected")
-        return response.make_response("System", "log out successfully", 200)
-    else:
-        return response.make_response("System", "user not found", 404)
+    try:
+        userID: str = (request.args.get("user_id"))
+        user = await utils.find_user(utils.client_list, userID)
+        if user != None:
+            utils.remove_from_list(utils.client_list, userID)
+            # res = await utils.delete_folder(userID)
+            # if res != "":
+            #     return response.make_response("System", res, 200)
+            await user.disconnect()
+            logging.info(f"{userID} disconnected")
+            return response.make_response("System", "log out successfully", 200)
+        else:
+            return response.make_response("System", "user not found", 404)
+    except Exception as e:
+        logging.error(e)
+        return response.make_response("System", e, 500)
 
 
 @blueprint.post("/login")
@@ -40,6 +44,13 @@ async def login() -> str:  # return userID to frontend
     try:
         data = await request.get_json()
         phone = data["phone"]
+
+        try:
+            os.remove(f"{phone}.session-jounral")
+            logging.info('removed sessiong-jounral')
+        except:
+            pass
+
         client = TelegramClient(phone, utils.api_id, utils.api_hash)
         await client.connect()
         if await utils.has_session(client, phone):
@@ -65,7 +76,8 @@ async def login() -> str:  # return userID to frontend
             utils.client_list[phone] = client
             return response.make_response("System", "please enter the code received in your telegram app", 200)
     except Exception as e:
-        print(e)
+        os.remove(f"{phone}.session")
+        logging.error(e)
         return response.make_response("System", e, 500)
 
 
@@ -118,7 +130,7 @@ async def checkConnection():
         else:
             return response.make_response("System", "Unauthorized", 401)
 
-        if(me != None):
+        if (me != None):
             res = {}
             res["id"] = me.id
             res["username"] = me.username
@@ -132,7 +144,7 @@ async def checkConnection():
         else:
             return response.make_response("System", "Unauthorized", 401)
     except Exception as e:
-        print(e)
+        logging.error(e)
         return response.make_response("System", e, 500)
 
 
@@ -147,7 +159,7 @@ async def conn(sid, userid):
         await utils.sio.emit('conn', "uesr not found", room=sid)
         return
     user: telethon.client_describe_obj = await client.get_me()
-    print(userid, "persisting")
+    logging.info(f"{userid} persisting")
     # res = await utils.make_folder(user.id)
     # if res != "":
     #     await utils.sio.emit('conn', res, room=sid)
@@ -163,14 +175,15 @@ async def conn(sid, userid):
     # send profile and unread count
     await utils.send_profile(sid, dialogs, client, user.id)
 
-    print(" ==== profile_sent ====")
+    logging.info(f" ==== {userid} profile_sent ====")
 
 # TODO: delete it or add real functions
 
 
 @utils.sio.event
 async def disconnect(sid):
-    print(sid, "disconnected")
+    # print(sid, "disconnected")
+    pass
 
 
 # Logout

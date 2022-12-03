@@ -15,6 +15,7 @@ import route.util as utils
 import sys
 from dotenv import load_dotenv
 import response
+import logging
 
 load_dotenv()  # take environment variables from .env.
 
@@ -22,6 +23,11 @@ load_dotenv()  # take environment variables from .env.
 if os.getenv("FROM") is None:
     sys.exit("FATAL : local enviroment variable FROM not set.")
 host = "0.0.0.0" if os.getenv("FROM") == "DOCKER" else "127.0.0.1"
+
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S')
 
 app = Quart(__name__)
 
@@ -43,6 +49,7 @@ app.register_blueprint(channel_blueprint)
 app.register_blueprint(priority_blueprint)
 app.register_blueprint(important_msg_blueprint)
 
+
 @app.errorhandler(Exception)
 def internelServerErrorHandler(e: Exception):
     err_msg = {
@@ -53,9 +60,12 @@ def internelServerErrorHandler(e: Exception):
         return response.make_response("System", err_msg, 404)
     return response.make_response("System", err_msg, 500)
 
+
 sio_app = socketio.ASGIApp(utils.sio, app, socketio_path="socket.io")
 
 utils.init()
 
 if __name__ == "__main__":
-    uvicorn.run(sio_app, port=5000, host=host, ssl_certfile="server.crt", ssl_keyfile="server.key")
+    # uvicorn.run(sio_app, port=5000, host=host,
+    #             ssl_certfile="server.crt", ssl_keyfile="server.key")
+    uvicorn.run(sio_app, port=5000, host=host)
