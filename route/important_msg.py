@@ -19,7 +19,7 @@ output: list of important messages, 200
 
 
 @blueprint.get("/channel/important_msg/<id>")
-async def getImportantMsg(id):
+async def get_important_msg(id):
     channel_id = request.args.get("channel_id")
     user: TelegramClient = await utils.find_user(utils.client_list, int(id))
     if user == None:
@@ -69,7 +69,7 @@ output: OK, 200
 
 
 @blueprint.post("/channel/important_msg/<id>")
-async def setImportantMsg(id):
+async def set_important_msg(id):
     data = await request.get_json()
 
     if not ("channel_id" in data):
@@ -104,7 +104,7 @@ output: OK, 200
 
 
 @blueprint.delete("/channel/important_msg/<id>")
-async def deleteImportantMsg(id):
+async def delete_important_msg(id):
     data = await request.get_json()
 
     if not ("channel_id" in data):
