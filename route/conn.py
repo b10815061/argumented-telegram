@@ -175,7 +175,7 @@ async def conn(sid, userid):
     # send profile and unread count
     await utils.send_profile(sid, dialogs, client, user.id)
 
-    logging.info(" ==== {usedid} profile_sent ====")
+    logging.info(f" ==== {userid} profile_sent ====")
 
 # TODO: delete it or add real functions
 
