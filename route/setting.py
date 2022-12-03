@@ -218,7 +218,7 @@ output: OK, 200
 """
 
 
-@blueprint.patch("/setting/ui/<id>")
+@blueprint.post("/setting/ui/<id>")
 async def updateUISetting(id):
     data = await request.get_json()
     font_size = 1
