@@ -5,6 +5,7 @@ from telethon.tl.functions.account import GetGlobalPrivacySettingsRequest, SetPr
 from telethon.tl.types import InputPrivacyKeyStatusTimestamp, InputPrivacyKeyChatInvite, InputPrivacyKeyPhoneCall, InputPrivacyKeyPhoneP2P, InputPrivacyKeyForwards, InputPrivacyKeyProfilePhoto, InputPrivacyKeyPhoneNumber, InputPrivacyKeyAddedByPhone, InputPrivacyValueDisallowAll, InputPrivacyValueAllowAll
 from telethon.tl.functions.photos import UploadProfilePhotoRequest
 from telethon.errors.rpcerrorlist import PhoneNumberOccupiedError, PhoneNumberInvalidError, PrivacyKeyInvalidError
+from quart_jwt_extended import get_jwt_claims, jwt_required
 import route.util as utils
 import route.DTOs as DTOs
 import telethon
@@ -30,7 +31,12 @@ output: stringify setting situation, 200
 
 
 @blueprint.get("/setting/privacy/<id>")
+@jwt_required
 async def getPrivacy(id) -> ResponseReturnValue:
+    user_jwt = get_jwt_claims()
+    if int(id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     user = await utils.find_user(utils.client_list, int(id))
     if user == None:
         return response.make_response("System", "user not found / not login", 404)
@@ -49,7 +55,12 @@ output: stringify setting situation, 200
 
 
 @blueprint.post("/setting/privacy/<id>")
+@jwt_required
 async def setPrivacy(id):
+    user_jwt = get_jwt_claims()
+    if int(id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     data = await request.get_json()
     ruleList = [InputPrivacyValueDisallowAll(), InputPrivacyValueAllowAll()]
 
@@ -78,7 +89,12 @@ output: OK, 200
 
 
 @blueprint.post("/setting/profile/<id>")
+@jwt_required
 async def updateProfile(id):
+    user_jwt = get_jwt_claims()
+    if int(id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     data = await request.get_json()
     user: TelegramClient = await utils.find_user(utils.client_list, int(id))
     if user == None:
@@ -100,7 +116,12 @@ output: OK, 200
 
 
 @blueprint.post("/setting/username/<id>")
+@jwt_required
 async def updateUsername(id):
+    user_jwt = get_jwt_claims()
+    if int(id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     data = await request.get_json()
     user: TelegramClient = await utils.find_user(utils.client_list, int(id))
     if user == None:
@@ -119,7 +140,12 @@ output: OK, 200
 
 
 @blueprint.post("/setting/photo/<id>")
+@jwt_required
 async def updatePhoto(id):
+    user_jwt = get_jwt_claims()
+    if int(id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     data = await request.get_json()
     user: TelegramClient = await utils.find_user(utils.client_list, int(id))
     if user == None:
@@ -140,7 +166,12 @@ output: phone_code_hash & other related result, 200
 
 
 @blueprint.post("/setting/phone/code/<id>")
+@jwt_required
 async def sendUpdatePhoneCodeRequest(id):
+    user_jwt = get_jwt_claims()
+    if int(id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     data = await request.get_json()
     user: TelegramClient = await utils.find_user(utils.client_list, int(id))
     if not ("phone" in data):
@@ -171,7 +202,12 @@ output: phone_code_hash & other related result, 200
 
 
 @blueprint.post("/setting/phone/verify/<id>")
+@jwt_required
 async def verifyPhoneChangeRequest(id):
+    user_jwt = get_jwt_claims()
+    if int(id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     data = await request.get_json()
     user: TelegramClient = await utils.find_user(utils.client_list, int(id))
     if not ("phone" in data):
@@ -201,7 +237,12 @@ output: return data, 200
 
 
 @blueprint.get("/setting/ui/<id>")
+@jwt_required
 async def getUISetting(id):
+    user_jwt = get_jwt_claims()
+    if int(id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     setting = Setting.get_setting(id)
     if setting == None:
         setting = Setting.create_setting(id, None, None, None)
@@ -219,7 +260,12 @@ output: OK, 200
 
 
 @blueprint.post("/setting/ui/<id>")
+@jwt_required
 async def updateUISetting(id):
+    user_jwt = get_jwt_claims()
+    if int(id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     data = await request.get_json()
     font_size = 1
     language = "en"
