@@ -36,6 +36,7 @@ app.config["JWT_SECRET_KEY"] = "tuna-birdy-UN"
 jwt = JWTManager(app)
 
 # it's used to get custom user claim for jwt auth
+# jwt include: uid = user id, phone = user phone
 @jwt.user_claims_loader
 def add_claims_to_access_token(identity):
     return {"uid": identity["uid"], "phone": identity["phone"]}

@@ -55,6 +55,7 @@ async def login() -> str:  # return userID to frontend
             pass
 
         # verify jwt phone with input phone to authorize correct user
+        # need to add "Bearer " before the token in input
         user_jwt = get_jwt_claims()
         jwt_phone = ""
 
