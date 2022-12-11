@@ -55,12 +55,7 @@ def load_session_file():
 # determine the given phone is valid and return True if client login successfully
 async def has_session(client, phone) -> bool:
     if not await client.is_user_authorized():
-        try:
-            await client.send_code_request(phone)
-            return False
-        except Exception as e:
-            print(e)
-            return False
+        return False
     else:
         return True
 
