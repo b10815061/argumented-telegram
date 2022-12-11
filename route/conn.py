@@ -124,7 +124,7 @@ async def verify():
     res["last_name"] = me.last_name
     res["phone"] = me.phone
     res["profile_pic"] = profile_pic_data
-    res["access_token"] = access_token
+    res["access_token"] = "Bearer " + access_token
 
     # Change from Phone to User ID
     utils.client_list[me.id] = utils.client_list[phone]
