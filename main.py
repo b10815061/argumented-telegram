@@ -16,6 +16,7 @@ import sys
 from dotenv import load_dotenv
 import response
 import logging
+import redis_instance
 
 load_dotenv()  # take environment variables from .env.
 
