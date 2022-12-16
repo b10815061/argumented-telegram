@@ -10,6 +10,8 @@ $ cd <the/path/of/the/application>
 $ docker-compose up --build
 ```
 
+please install and build redis first following the instructions here: https://www.runoob.com/docker/docker-install-redis.html
+
 the build command takes longer to run, as it runs the all setup commands for docker, as well as compiles the main application.
 
 ## start the application (used if there's no need to change, adjust previous version of the application)

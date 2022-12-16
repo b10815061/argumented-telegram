@@ -10,6 +10,7 @@ import route.DTOs as DTOs
 from PIL import Image
 import io
 import base64
+import redis_instance
 
 blueprint = Blueprint("channel", __name__)
 
@@ -72,8 +73,15 @@ async def channel_list(uid):
     is_basic = ((is_basic != None) and (
         is_basic == "True" or is_basic == "true"))
 
-    priority_list = priority.get_channel_prioritys_by_user(uid)
+    redis_key = "/channel/list/" + \
+        str(uid) + "_" + str(slice_by) + "_" + \
+        str(page_count) + "_" + str(is_basic)
+    redis_result = redis_instance.getRedisValueByKey(redis_key)
+    if redis_result != None:
+        print("cached channel/list")
+        return response.make_response("System", redis_result, 200)
 
+    priority_list = priority.get_channel_prioritys_by_user(uid)
     channelList = []
     channel_count = 0
     d: telethon.tl.custom.dialog.Dialog
@@ -124,6 +132,9 @@ async def channel_list(uid):
     if page_count != -1:
         channelList = channelList[page_count *
                                   slice_by: (page_count + 1) * slice_by]
+
+    redis_instance.setRedisKeyAndValue(redis_key, channelList)
+
     return response.make_response("System", channelList, 200)
 
 
@@ -145,6 +156,13 @@ async def photo_list(uid):
     user_list = request.args.get("user_list")
     if user_list == None:
         return response.make_response("System", "lack of user list", 400)
+
+    redis_key = "/channel/photo/" + str(uid) + "_" + str(user_list)
+    redis_result = redis_instance.getRedisValueByKey(redis_key)
+    if redis_result != None:
+        print("cached channel/photo")
+        return response.make_response("System", redis_result, 200)
+
     user_list = user_list.split(",")
 
     participants = []
@@ -168,4 +186,7 @@ async def photo_list(uid):
             participant.b64 = b64
             # print(b64)
         participants.append(participant.__dict__)
+
+    redis_instance.setRedisKeyAndValue(redis_key, participants)
+
     return response.make_response("System", participants, 200)
