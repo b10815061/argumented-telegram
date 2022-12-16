@@ -43,7 +43,7 @@ def add_claims_to_access_token(identity):
 
 # set up cors rules
 app = cors(app_or_blueprint=app,
-           allow_headers=["content-type"],
+           allow_headers=["content-type",'authorization'],
            allow_methods=["GET", "POST", "DELETE"],
            allow_origin=[os.getenv("FRONTEND_SITE")])
 
