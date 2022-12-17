@@ -1,4 +1,5 @@
 # this file is used to initialize all features used in testing section
+# IMPORTANT: testing doesn't suit versions with JWT
 
 import pytest
 import asyncio

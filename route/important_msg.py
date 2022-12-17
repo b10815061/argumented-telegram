@@ -2,6 +2,7 @@ from quart import Blueprint, Request, ResponseReturnValue, request
 from DB.crud import important_msg as Important_Msg
 from telethon import TelegramClient
 from telethon.tl.types import Message
+from quart_jwt_extended import get_jwt_claims, jwt_required
 import route.DTOs as DTOs
 import route.util as utils
 import user.channel.message.util as message_utils
@@ -19,7 +20,12 @@ output: list of important messages, 200
 
 
 @blueprint.get("/channel/important_msg/<id>")
+@jwt_required
 async def get_important_msg(id):
+    user_jwt = get_jwt_claims()
+    if int(id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     channel_id = request.args.get("channel_id")
     user: TelegramClient = await utils.find_user(utils.client_list, int(id))
     if user == None:
@@ -69,7 +75,12 @@ output: OK, 200
 
 
 @blueprint.post("/channel/important_msg/<id>")
+@jwt_required
 async def set_important_msg(id):
+    user_jwt = get_jwt_claims()
+    if int(id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     data = await request.get_json()
 
     if not ("channel_id" in data):
@@ -104,7 +115,12 @@ output: OK, 200
 
 
 @blueprint.delete("/channel/important_msg/<id>")
+@jwt_required
 async def delete_important_msg(id):
+    user_jwt = get_jwt_claims()
+    if int(id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     data = await request.get_json()
 
     if not ("channel_id" in data):

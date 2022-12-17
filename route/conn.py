@@ -2,15 +2,20 @@ from quart import Blueprint, request  # , websocket
 # from quart_cors import route_cors
 from telethon.sync import TelegramClient
 from user.channel.message import incoming_msg
+from quart_jwt_extended import jwt_optional, get_jwt_claims, create_access_token, jwt_required
 import response
 import route.util as utils
 import telethon
 import os
 import logging
+import datetime
 blueprint = Blueprint("connection", __name__)
+
+# jwt logic: need to login first = jwt_require & check, don't need to login = nothing, loginning = jwt_optional
 
 
 @blueprint.route("/disconnect")
+@jwt_required
 async def disconnect():
     """
     remove the connection of python - telegram.
@@ -19,6 +24,11 @@ async def disconnect():
     """
     try:
         userID: str = (request.args.get("user_id"))
+
+        user_jwt = get_jwt_claims()
+        if int(userID) != int(user_jwt["uid"]):
+            return response.make_response("System", "Unauthorized", 401)
+
         user = await utils.find_user(utils.client_list, userID)
         if user != None:
             utils.remove_from_list(utils.client_list, userID)
@@ -36,6 +46,7 @@ async def disconnect():
 
 
 @blueprint.post("/login")
+@jwt_optional
 async def login() -> str:  # return userID to frontend
     """
     establish connection
@@ -51,9 +62,17 @@ async def login() -> str:  # return userID to frontend
         except:
             pass
 
+        # verify jwt phone with input phone to authorize correct user
+        # need to add "Bearer " before the token in input
+        user_jwt = get_jwt_claims()
+        jwt_phone = ""
+
+        if user_jwt:
+            jwt_phone = user_jwt["phone"]
+
         client = TelegramClient(phone, utils.api_id, utils.api_hash)
         await client.connect()
-        if await utils.has_session(client, phone):
+        if jwt_phone == phone and await utils.has_session(client, phone):
             me = await client.get_me()
             profile_pic_data = await utils.get_profile_pic(client, me.id)
 
@@ -72,6 +91,7 @@ async def login() -> str:  # return userID to frontend
 
             return response.make_response("System", res, 202)
         else:
+            await client.send_code_request(phone)
             # This line should be added as client can only provide unique phone number
             utils.client_list[phone] = client
             return response.make_response("System", "please enter the code received in your telegram app", 200)
@@ -99,6 +119,11 @@ async def verify():
     me = await utils.client_list[phone].get_me()
     profile_pic_data = await utils.get_profile_pic(utils.client_list[phone], me.id)
 
+    expires = datetime.timedelta(days=30)
+    # need to add "Bearer " before the token
+    access_token = create_access_token(
+        identity={"uid": me.id, "phone": phone}, expires_delta=expires)
+
     res = {}
     res["id"] = me.id
     res["username"] = me.username
@@ -107,7 +132,7 @@ async def verify():
     res["last_name"] = me.last_name
     res["phone"] = me.phone
     res["profile_pic"] = profile_pic_data
-    # json_data = json.dumps(res, ensure_ascii=False)
+    res["access_token"] = "Bearer " + access_token
 
     # Change from Phone to User ID
     utils.client_list[me.id] = utils.client_list[phone]
@@ -118,10 +143,15 @@ async def verify():
 
 # Check authorized yet or not
 @blueprint.post('/checkConnection')
+@jwt_required
 async def checkConnection():
     try:
         data = await request.get_json()
         uid = data["uid"]
+        user_jwt = get_jwt_claims()
+        if int(uid) != int(user_jwt["uid"]):
+            return response.make_response("System", "Unauthorized", 401)
+
         client = await utils.find_user(utils.client_list, uid)
 
         if client != None:
@@ -188,9 +218,14 @@ async def disconnect(sid):
 
 # Logout
 @blueprint.post('/logout')
+@jwt_required
 async def logout():
     data = await request.get_json()
     uid = data["uid"]
+
+    user_jwt = get_jwt_claims()
+    if int(uid) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
 
     try:
         await utils.client_list[uid].log_out()

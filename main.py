@@ -36,6 +36,12 @@ app = Quart(__name__)
 app.config["JWT_SECRET_KEY"] = "tuna-birdy-UN"
 jwt = JWTManager(app)
 
+# it's used to get custom user claim for jwt auth
+# jwt include: uid = user id, phone = user phone
+@jwt.user_claims_loader
+def add_claims_to_access_token(identity):
+    return {"uid": identity["uid"], "phone": identity["phone"]}
+
 # set up cors rules
 app = cors(app_or_blueprint=app,
            allow_headers=["content-type"],

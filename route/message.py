@@ -4,6 +4,7 @@ from quart import Blueprint, render_template, request, websocket
 from telethon.sync import TelegramClient
 from user.channel import message
 from user.channel.message import incoming_msg
+from quart_jwt_extended import get_jwt_claims, jwt_required
 import response
 import route.util as utils
 import route.DTOs as DTOs
@@ -20,12 +21,17 @@ blueprint = Blueprint("message", __name__)
 # @route_cors(allow_headers=["content-type"],
 #             allow_methods=["POST"],
 #             allow_origin=["http://localhost:3000"])
+@jwt_required
 async def sendFile():
     try:
         data: quart.datastruture.FieldStorage = await request.files
         file = data["file"]
         user_id = int(request.args.get("user_id"))
         channel_id = int(request.args.get("channel_id"))
+
+        user_jwt = get_jwt_claims()
+        if int(user_id) != int(user_jwt["uid"]):
+            return response.make_response("System", "Unauthorized", 401)
 
         user = await utils.find_user(utils.client_list, user_id)
         if user != None:
@@ -67,6 +73,7 @@ async def sendFile():
 # @route_cors(allow_headers=["content-type"],
 #             allow_methods=["POST"],
 #             allow_origin=["http://localhost:3000"])
+@jwt_required
 async def send():
     """send a message to the given channel /
     params(json) : [user_id : the teletgram userID,
@@ -77,6 +84,11 @@ async def send():
     user_id = data["user_id"]
     channel_id = data["channel_id"]
     message = data["message"]
+
+    user_jwt = get_jwt_claims()
+    if int(user_id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     user = await utils.find_user(utils.client_list, user_id)
 
     if user != None:
@@ -105,6 +117,7 @@ async def send():
 
 
 @blueprint.get("/getPinnedMessage")
+@jwt_required
 async def getPin():
     """
     due to the API of telethon
@@ -113,6 +126,11 @@ async def getPin():
     try:
         user_id = int(request.args.get("user_id"))
         channel_id = int(request.args.get("channel_id"))
+
+        user_jwt = get_jwt_claims()
+        if int(user_id) != int(user_jwt["uid"]):
+            return response.make_response("System", "Unauthorized", 401)
+
         user = await utils.find_user(utils.client_list, user_id)
         if user != None:
             if user.is_connected():
@@ -152,6 +170,7 @@ async def getPin():
 
 
 @ blueprint.post("/pin")
+@jwt_required
 async def pin():
     """pin a messaage in the channel /
     params(json) : [user_id : the telegram userID,
@@ -163,6 +182,11 @@ async def pin():
         user_id = int(data["user_id"])
         channel_id = int(data["channel_id"])
         message_id = int(data["message_id"])
+
+        user_jwt = get_jwt_claims()
+        if int(user_id) != int(user_jwt["uid"]):
+            return response.make_response("System", "Unauthorized", 401)
+
         user = await utils.find_user(utils.client_list, user_id)
         if user != None:
             if user.is_connected():
@@ -183,6 +207,7 @@ async def pin():
 
 
 @ blueprint.post("/ack")
+@jwt_required
 async def ack():
     """ read a given channel message /
     params(json) : [
@@ -191,6 +216,10 @@ async def ack():
     """
     data = await request.get_json()
     user_id = data["user_id"]
+    user_jwt = get_jwt_claims()
+    if int(user_id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     user = await utils.find_user(utils.client_list, user_id)
     try:
         if user != None:
@@ -211,11 +240,17 @@ async def ack():
 
 
 @blueprint.delete("/deleteMessage")
+@jwt_required
 async def deleteMessage():
     try:
         user_id = int(request.args.get("user_id"))
         channel_id = int(request.args.get("channel_id"))
         message_id = int(request.args.get("message_id"))
+
+        user_jwt = get_jwt_claims()
+        if int(user_id) != int(user_jwt["uid"]):
+            return response.make_response("System", "Unauthorized", 401)
+
         user = await utils.find_user(utils.client_list, user_id)
         await user.delete_messages(entity=channel_id, message_ids=message_id)
         return response.make_response("System", "OK", 200)
@@ -225,10 +260,16 @@ async def deleteMessage():
 
 
 @blueprint.get('/getMessage')
+@jwt_required
 async def getMessage():
     user_id = int(request.args.get("user_id"))
     channel_id = int(request.args.get("channel_id"))
     message_id = int(request.args.get("message_id"))
+
+    user_jwt = get_jwt_claims()
+    if int(user_id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     user = await utils.find_user(utils.client_list, user_id)
 
     if user != None:
@@ -297,6 +338,7 @@ output: json format message data list, 200
 
 
 @blueprint.get('/messages')
+@jwt_required
 async def getMessageList():
     user_id = request.args.get("user_id")
     channel_id = request.args.get("channel_id")
@@ -312,6 +354,10 @@ async def getMessageList():
 
     if message_id == None:
         return response.make_response("System", "messageid not provided", 404)
+
+    user_jwt = get_jwt_claims()
+    if int(user_id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
 
     user = await utils.find_user(utils.client_list, user_id)
     if user == None:

@@ -1,5 +1,6 @@
 from quart import Blueprint, Request, ResponseReturnValue, request
 from telethon import TelegramClient
+from quart_jwt_extended import get_jwt_claims, jwt_required
 from DB.crud import priority
 import route.util as utils
 import response
@@ -15,7 +16,12 @@ output: stringify setting situation, 200
 
 
 @blueprint.post("/channel/priority/<id>")
+@jwt_required
 async def updatePriority(id):
+    user_jwt = get_jwt_claims()
+    if int(id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     data = await request.get_json()
     user: TelegramClient = await utils.find_user(utils.client_list, int(id))
     if user == None:

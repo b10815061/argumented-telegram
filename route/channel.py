@@ -1,6 +1,7 @@
 from quart import Blueprint, request, websocket
 from quart_cors import route_cors
 from telethon.sync import TelegramClient
+from quart_jwt_extended import get_jwt_claims, jwt_required
 import response
 import route.util as utils
 from telethon import functions, types
@@ -16,6 +17,7 @@ blueprint = Blueprint("channel", __name__)
 
 
 @blueprint.post("/mute")
+@jwt_required
 async def mute():
     """ mute the target channel /
     params(json) :
@@ -26,6 +28,11 @@ async def mute():
     user_id = data["user_id"]
     channel_id = data["channel_id"]
     state = data["state"]
+
+    user_jwt = get_jwt_claims()
+    if int(user_id) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     user = await utils.find_user(utils.client_list, user_id)
 
     if user != None:
@@ -51,7 +58,12 @@ note:   it may be slow because of lots of image request
 
 
 @blueprint.get("/channel/list/<uid>")
+@jwt_required
 async def channel_list(uid):
+    user_jwt = get_jwt_claims()
+    if int(uid) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     user: TelegramClient = await utils.find_user(utils.client_list, int(uid))
     if user == None:
         return response.make_response("System", "user not found / not login", 404)
@@ -148,7 +160,12 @@ note:   use to get photo in group channel
 
 
 @blueprint.get("/channel/photo/<uid>")
+@jwt_required
 async def photo_list(uid):
+    user_jwt = get_jwt_claims()
+    if int(uid) != int(user_jwt["uid"]):
+        return response.make_response("System", "Unauthorized", 401)
+
     client: TelegramClient = await utils.find_user(utils.client_list, int(uid))
     if client == None:
         return response.make_response("System", "user not found / not login", 404)
