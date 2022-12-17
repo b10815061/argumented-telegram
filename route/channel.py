@@ -140,7 +140,7 @@ async def channel_list(uid):
 
 """
 job:    get other users' photo
-route:  GET "/channel/photo/uid"
+route:  GET "/channel/photo/<uid>"
 input:  user_list: list of user id split by ','
 output: list of participant: { id: user id, b64: base 64 photo }
 note:   use to get photo in group channel

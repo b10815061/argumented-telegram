@@ -165,8 +165,8 @@ async def sendUpdatePhoneCodeRequest(id):
 """
 job:    varify phone change request
 route:  POST "/setting/phone/varify/<id>"
-input:  phone: new phone number (json)
-output: phone_code_hash & other related result, 200
+input:  phone: new phone number, code_hash, code (json)
+output: OK, 200
 """
 
 
@@ -212,8 +212,8 @@ async def getUISetting(id):
 
 """
 job:    update ui setting (related to our DB)
-route:  PATCH "/setting/ui/<id>"
-input:  font_size: font size in ui (int), language: ui language (json) (optional)
+route:  POST "/setting/ui/<id>"
+input:  font_size: font size in ui (int), language: ui language, bubble_count (json) (optional)
 output: OK, 200
 """
 
