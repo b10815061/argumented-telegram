@@ -1,7 +1,7 @@
 # redis docker build: https://www.runoob.com/docker/docker-install-redis.html
 import redis
 import json
-
+import os
 
 def createRedisClient(host, port):
     try:
@@ -49,5 +49,4 @@ def setRedisKeyAndValue(key: str, value):
     redisClient.expire(key, 600) # set 10 min data expiration time
     return output
 
-
-redisClient = createRedisClient('localhost', 6379)
+redisClient = createRedisClient('localhost', 6379) if os.getenv("FROM") == 'LOCAL' else createRedisClient('redis', 6379)
