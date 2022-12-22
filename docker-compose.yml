@@ -26,6 +26,7 @@ services:
   ### DB SERVICE
   ### ===================
   db:
+    container_name: db
     image: postgres:12-alpine
     restart: always
     healthcheck:
@@ -54,6 +55,34 @@ services:
       - tele-compose-data:/var/lib/postgresql/data
     networks:
       - telethon_network
+  ### ===================
+  ### DB SERVICE
+  ### ===================
+  redis:
+    container_name: app-redis
+    image: redis
+    restart: always
+    healthcheck:
+      interval: 120ms
+      retries: 50
+      start_period: 120s
+      test: |
+        touch /tmp/healthcheck.txt &&
+        mkdir /tmp/healthcheck &&
+        mv /tmp/healthcheck.txt /tmp/healthcheck &&
+        cd /tmp/healthcheck &&
+        echo "hello my docker container is working fine" >> healthcheck.txt &&
+        cat healthcheck.txt &&
+        rm healthcheck.txt &&
+        cd .. &&
+        rmdir /tmp/healthcheck
+        cls
+      timeout: 60ms
+    ports:
+      - 6379:6379
+    networks:
+      - telethon_network
+  
 ### ========================
 ### VOLUMES PERSISTENT DATA
 ### ========================
