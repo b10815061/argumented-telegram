@@ -23,6 +23,7 @@ def createRedisClient(host, port):
 # acquire a lock for data
 # try again to get redis cache data
 # if not found, use DB
+# release lock
 
 # cache flow is used to prevent simultaneously acquire a data
 
