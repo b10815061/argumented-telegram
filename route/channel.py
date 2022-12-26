@@ -145,7 +145,8 @@ async def channel_list(uid):
         channelList = channelList[page_count *
                                   slice_by: (page_count + 1) * slice_by]
 
-    redis_instance.setRedisKeyAndValue(redis_key, channelList)
+    if is_basic == False:
+        redis_instance.setRedisKeyAndValue(redis_key, channelList)
 
     return response.make_response("System", channelList, 200)
 

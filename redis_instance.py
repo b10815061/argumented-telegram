@@ -47,7 +47,7 @@ def getRedisValueByKey(key: str):
 def setRedisKeyAndValue(key: str, value):
     value = json.dumps(value)
     output = redisClient.set(key, value)
-    redisClient.expire(key, 600) # set 10 min data expiration time
+    redisClient.expire(key, 180) # set 3 min data expiration time
     return output
 
 redisClient = createRedisClient('localhost', 6379) if os.getenv("FROM") == 'LOCAL' else createRedisClient('redis', 6379)
