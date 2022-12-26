@@ -218,14 +218,13 @@ async def disconnect(sid):
 
 # Logout
 @blueprint.post('/logout')
-@jwt_required
 async def logout():
     data = await request.get_json()
     uid = data["uid"]
 
-    user_jwt = get_jwt_claims()
-    if int(uid) != int(user_jwt["uid"]):
-        return response.make_response("System", "Unauthorized", 401)
+    # user_jwt = get_jwt_claims()
+    # if int(uid) != int(user_jwt["uid"]):
+    #     return response.make_response("System", "Unauthorized", 401)
 
     try:
         await utils.client_list[uid].log_out()
