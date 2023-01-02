@@ -56,7 +56,7 @@ services:
     networks:
       - telethon_network
   ### ===================
-  ### DB SERVICE
+  ### CACHE SERVER SERVICE
   ### ===================
   redis:
     container_name: app-redis
