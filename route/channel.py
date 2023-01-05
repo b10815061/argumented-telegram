@@ -85,13 +85,13 @@ async def channel_list(uid):
     is_basic = ((is_basic != None) and (
         is_basic == "True" or is_basic == "true"))
 
-    redis_key = "/channel/list/" + \
-        str(uid) + "_" + str(slice_by) + "_" + \
-        str(page_count) + "_" + str(is_basic)
-    redis_result = redis_instance.getRedisValueByKey(redis_key)
-    if redis_result != None:
-        print("cached channel/list")
-        return response.make_response("System", redis_result, 200)
+    # redis_key = "/channel/list/" + \
+    #     str(uid) + "_" + str(slice_by) + "_" + \
+    #     str(page_count) + "_" + str(is_basic)
+    # redis_result = redis_instance.getRedisValueByKey(redis_key)
+    # if redis_result != None:
+    #     print("cached channel/list")
+    #     return response.make_response("System", redis_result, 200)
 
     priority_list = priority.get_channel_prioritys_by_user(uid)
     channelList = []
@@ -145,8 +145,8 @@ async def channel_list(uid):
         channelList = channelList[page_count *
                                   slice_by: (page_count + 1) * slice_by]
 
-    if is_basic == False:
-        redis_instance.setRedisKeyAndValue(redis_key, channelList)
+    # if is_basic == False:
+    #     redis_instance.setRedisKeyAndValue(redis_key, channelList)
 
     return response.make_response("System", channelList, 200)
 
